@@ -1,7 +1,11 @@
 # .github/workflows/ci.yml
 name: CI
   
-on: [push]  
+on:
+  issues:
+    types: [opened, edited, reopened]
+  issue_comment:
+    types: [created, edited]
   
 jobs:  
   run-tests:  
@@ -46,9 +50,24 @@ jobs:
       run: |
         sudo apt-get install python3-dev pkg-config
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
-        pip install pylint
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi  
+        python -m pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --disable=R,C $(git ls-files 'leap/*.py')        
-
+        pylint --disable=R,C $(git ls-files 'leap/*.py') > pylint-report.txt
+        score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
+        echo "::set-output name=score::$score"
+    - name: Post pylint report
+      if: github.event.issue != null
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const data = fs.readFileSync('pylint-report.txt', 'utf8');
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: data
+          });
