@@ -55,31 +55,20 @@ jobs:
         pylint --disable=R,C $(git ls-files 'leap/*.py') > pylint-report.txt
         score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
         echo "::set-output name=score::$score"
-    - name: Fetch issue number
-      id: issue_number
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { data: issues } = await github.rest.issues.listForRepo({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            labels: 'pylint', // Replace with your criteria for fetching the issue
-          });
-          const issue_number = issues.length > 0 ? issues[0].number : null;
-          if (!issue_number) {
-            throw new Error('No matching issue found');
-          }
-          return issue_number;
+    - name: Extract issue number from branch name
+      id: extract_issue_number
+      run: |
+        branch_name=${GITHUB_REF##*/}
+        issue_number=$(echo $branch_name | cut -d'-' -f1)
+        echo "::set-output name=issue_number::$issue_number"
     - name: Post pylint report
-      if: github.event.issue != null
+      if: steps.extract_issue_number.outputs.result != null
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const score = '${{ steps.pylint.outputs.score }}';
-          const issue_number = ${{ steps.issue_number.outputs.result }};
+          const issue_number = ${{ steps.extract_issue_number.outputs.result }};
           github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
