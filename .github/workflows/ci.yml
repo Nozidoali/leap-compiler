@@ -1,11 +1,7 @@
 # .github/workflows/ci.yml
 name: CI
   
-on:
-  issues:
-    types: [opened, edited, reopened]
-  issue_comment:
-    types: [created, edited]
+on: [push, pull_request]
   
 jobs:  
   run-tests:  
@@ -53,18 +49,36 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi  
         python -m pip install pylint
     - name: Analysing the code with pylint
+      id: pylint
       run: |
         pylint --disable=R,C $(git ls-files 'leap/*.py') > pylint-report.txt
         score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
         echo "::set-output name=score::$score"
+    - name: Fetch issue number
+      id: issue_number
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'pylint', // Replace with your criteria for fetching the issue
+          });
+          const issue_number = issues.length > 0 ? issues[0].number : null;
+          if (!issue_number) {
+            throw new Error('No matching issue found');
+          }
+          return issue_number;
     - name: Post pylint report
       if: github.event.issue != null
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const fs = require('fs');
-          const data = fs.readFileSync('pylint-report.txt', 'utf8');
+          const score = '${{ steps.pylint.outputs.score }}';
+          const issue_number = ${{ steps.issue_number.outputs.result }};
           github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
