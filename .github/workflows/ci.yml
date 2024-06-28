@@ -83,7 +83,7 @@ jobs:
           } else {
             pylint_output = 'Pylint output file not found.';
           }
-          let comment_body = `Pylint Score: ${score}\n Details: ${pylint_output}`.
+          let comment_body = `Pylint Score: ${score}\n Please check the details below:\n\n\`\`\`\n${pylint_output}\n\`\`\``;
           if (score === 'undefined') {
             comment_body = `Pylint failed or returned no score. Please check the details below:\n\n\`\`\`\n${pylint_output}\n\`\`\``;
           }
