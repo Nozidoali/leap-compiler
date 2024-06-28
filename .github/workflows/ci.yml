@@ -57,8 +57,6 @@ jobs:
       run: |
         pylint --disable=R,C $(git ls-files 'leap/*.py')   > pylint_output.txt 2&>1 || echo "Pylint failed with signal $?. See pylint_output.txt for details."
         if [ -f pylint_output.txt ]; then
-          echo "Pylint output:"
-          cat pylint_output.txt
           score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
           echo "score=$score" >> $GITHUB_ENV
         else
@@ -85,7 +83,7 @@ jobs:
           } else {
             pylint_output = 'Pylint output file not found.';
           }
-          let comment_body = `Pylint Score: ${score}`;
+          let comment_body = `Pylint Score: ${score}\n Details: ${pylint_output}`.
           if (score === 'undefined') {
             comment_body = `Pylint failed or returned no score. Please check the details below:\n\n\`\`\`\n${pylint_output}\n\`\`\``;
           }
