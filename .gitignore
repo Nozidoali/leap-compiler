@@ -159,3 +159,4 @@ tests/*.csv
 # pkl files 
 *.pkl
 *.txt
+!requirements.txt

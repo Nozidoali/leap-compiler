@@ -56,7 +56,7 @@ jobs:
       run: |
         pylint --disable=R,C $(git ls-files 'leap/*.py') > pylint_output.txt || echo "Pylint failed with signal $?. See pylint_output.txt for details."
         if [ -f pylint_output.txt ]; then
-          score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
+          score=$(grep -oP 'Your code has been rated at \K[\d.]+' pylint_output.txt)
           echo "score=$score" >> $GITHUB_ENV
         else
           echo "score=0" >> $GITHUB_ENV
