@@ -55,7 +55,7 @@ jobs:
       id: pylint
       continue-on-error: true
       run: |
-        pylint your_code_directory > pylint_output.txt 2&>1 || echo "Pylint failed with signal $?. See pylint_output.txt for details."
+        pylint --disable=R,C $(git ls-files 'leap/*.py')   > pylint_output.txt 2&>1 || echo "Pylint failed with signal $?. See pylint_output.txt for details."
         if [ -f pylint_output.txt ]; then
           score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
           echo "score=$score" >> $GITHUB_ENV
