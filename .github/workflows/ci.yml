@@ -54,24 +54,29 @@ jobs:
       run: |
         pylint --disable=R,C $(git ls-files 'leap/*.py') > pylint-report.txt
         score=$(tail -n 2 pylint_output.txt | head -n 1 | awk '{print $7}')
-        echo "::set-output name=score::$score"
+        echo "score=$score" >> $GITHUB_ENV
     - name: Extract issue number from branch name
       id: extract_issue_number
       run: |
         branch_name=${GITHUB_REF##*/}
         issue_number=$(echo $branch_name | cut -d'-' -f1)
-        echo "::set-output name=issue_number::$issue_number"
-    - name: Post pylint report
-      if: steps.extract_issue_number.outputs.result != null
+        echo "issue_number=$issue_number" >> $GITHUB_ENV
+    - name: Post comment on issue
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const score = '${{ steps.pylint.outputs.score }}';
-          const issue_number = ${{ steps.extract_issue_number.outputs.result }};
-          github.issues.createComment({
-            issue_number: context.issue.number,
+          const score = process.env.score;
+          const issue_number = process.env.issue_number;
+          const fs = require('fs');
+          const pylint_output = fs.readFileSync('pylint_output.txt', 'utf8');
+          let comment_body = `Pylint Score: ${score}`;
+          if (!score) {
+            comment_body = `Pylint failed with signal 6. Please check the details below:\n\n\`\`\`\n${pylint_output}\n\`\`\``;
+          }
+          github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: data
+            issue_number: parseInt(issue_number),
+            body: comment_body
           });
