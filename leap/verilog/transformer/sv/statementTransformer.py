@@ -59,7 +59,7 @@ class StatementTransformer(Transformer):
         for statement in items[1]:
             logger.debug(f"statement = {statement}")
             sType, assign = statement
-            if sType == "vairable_assignment":
+            if sType == "variable_assignment":
                 assign.setCondition(items[0])
                 statements.append((sType, assign))
             else:
@@ -71,7 +71,7 @@ class StatementTransformer(Transformer):
         for statement in items[1]:
             logger.debug(f"statement = {statement}")
             sType, assign = statement
-            if sType == "vairable_assignment":
+            if sType == "variable_assignment":
                 assign.setCondition(items[0])
                 statements.append((sType, assign))
             else:

@@ -22,4 +22,4 @@ class Assignment:
         self.condition = condition
 
     def __repr__(self) -> str:
-        return f"{self.target} = {self.expression}"
+        return f"{self.target} = {self.expression} ({self.condition})"

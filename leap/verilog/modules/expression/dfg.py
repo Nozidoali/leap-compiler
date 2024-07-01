@@ -80,26 +80,42 @@ def createFuncCallNode(func_name: str, children: list):
     return node
 
 
-def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode):
-    newNodes = []
-    if isinstance(assignTo, str):
-        node = DFGNode(assignTo)
+def _createInputAssignNode(assignFrom: DFGNode):
+    node = DFGNode("=")
+    node.operation = SOPType.WIRE
+    node.children = [assignFrom]
+    return node
+
+
+def _createOutputAssignNode(assignFrom: DFGNode, assignTo: str, condition: DFGNode = None):
+    node = DFGNode(assignTo)
+    if condition is not None:
+        node.operation = SOPType.CONDITIONAL_ASSIGN
+        node.children = [condition, assignFrom]
     else:
-        node = DFGNode("=")
+        node.operation = SOPType.ASSIGN
+        node.children = [assignFrom]
+    return node
+
+
+def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode, condition: DFGNode = None):
+    newNodes = []
+
+    node = _createInputAssignNode(assignFrom)
+    newNodes.append(node)
+    
+    if isinstance(assignTo, str):
+        newNodes.append(_createOutputAssignNode(node, assignTo, condition))
+    else:
         child: DFGNode
         for child in assignTo.children:
             assert child.isVariable() or child.isConstant(), f"child = {child}"
             assert child.children == [], f"child = {child}"
 
-            # we need to create a new node
-            newNode = DFGNode(child.variable_name)
-            newNode.operation = SOPType.ASSIGN
-            newNode.children = [node]
-            newNodes.append(newNode)
-
-    node.operation = SOPType.ASSIGN
-    node.children = [assignFrom]
-    newNodes.append(node)
+            newNodes.append(_createOutputAssignNode(
+                node, 
+                child.variable_name, 
+            condition))
 
     return newNodes
 
@@ -137,7 +153,7 @@ class DFGraph:
     def addNode(self, node: DFGNode, parentNode: DFGNode = None):
         assert isinstance(node, DFGNode), f"node = {node}"
         logger.debug(f"Adding node: {node}")
-        if node.operation == SOPType.ASSIGN:
+        if node.operation == SOPType.ASSIGN or node.operation == SOPType.CONDITIONAL_ASSIGN:
             if node.variable_name not in self.__variable_definitions:
                 self.__variable_definitions[node.variable_name] = node
                 self.__variable_fanouts[node.variable_name] = set()
@@ -145,25 +161,28 @@ class DFGraph:
                 # we need to modify the variable
                 oldNode = self.__variable_definitions[node.variable_name]
                 if oldNode.operation == SOPType.VARIABLE:
-                    oldNode.operation = SOPType.ASSIGN
+                    oldNode.operation = node.operation
                     oldNode.children = node.children[:]
                     return
                     logger.info(f"Overwriting node: {oldNode}")
                 elif oldNode.operation == SOPType.ASSIGN:
                     logger.info(f"Overwriting node: {oldNode}")
                     
-                    assert len(oldNode.children) == 1
+                    assert len(oldNode.children) == 1, f"oldNode = {oldNode}, children = {oldNode.children}"
                     prevChild = oldNode.children[0]
                     
                     # we need to change the assign to a mux
-                    newChild = node.children[0]
-                    oldNode.operation = SOPType.ASSIGN
-                    oldNode.children = node.children[:]
+                    oldNode.operation = SOPType.CONDITIONAL_ASSIGN
+                    oldNode.children = node.children[:] + [prevChild]
+                    return
+                elif oldNode.operation == SOPType.CONDITIONAL_ASSIGN:
+                    logger.info(f"Overwriting node: {oldNode}")
+                    oldNode.children = oldNode.children[:] + node.children[:]
                     return
                 else:
                     logger.error(f"Overwriting node: {oldNode}")
                     return
-        if node.isVariable():
+        elif node.isVariable():
             variable = node.variable_name
             if variable in self.__variable_definitions:
                 # we modify the variable
@@ -185,6 +204,7 @@ class DFGraph:
             node_name: str = node.variable_name
             if node_name in visited:
                 return node_name
+            # print(f"Node: {node}, children: {node.children}")
             visited.add(node_name)
         else:
             self.__node_trav_index += 1
@@ -201,10 +221,11 @@ class DFGraph:
         graph = pgv.AGraph(directed=True)
         visited = set()
         for node in self.nodes:
-            if node.operation != SOPType.ASSIGN:
+            if node.operation != SOPType.ASSIGN and node.operation != SOPType.CONDITIONAL_ASSIGN:
                 continue
             if node.variable_name not in self.__variable_fanouts:
                 continue
-            if len(self.__variable_fanouts[node.variable_name]) == 0:
-                self.toGraphRec(node, graph, visited)
+            if len(self.__variable_fanouts[node.variable_name]) != 0:
+                continue
+            self.toGraphRec(node, graph, visited)
         return graph
