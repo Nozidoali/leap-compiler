@@ -61,11 +61,11 @@ module toy
 	main_0_c_out_b
 );
 
-parameter [2:0] LEGUP_0 = 3'd0;
-parameter [2:0] LEGUP_F_toy_BB__1_1 = 3'd1;
-parameter [2:0] LEGUP_F_toy_BB__1_2 = 3'd2;
-parameter [2:0] LEGUP_F_toy_BB__1_3 = 3'd3;
-parameter [2:0] LEGUP_F_toy_BB__6_4 = 3'd4;
+parameter [2:0] l_0 = 3'd0;
+parameter [2:0] l_F_toy_BB__1_1 = 3'd1;
+parameter [2:0] l_F_toy_BB__1_2 = 3'd2;
+parameter [2:0] l_F_toy_BB__1_3 = 3'd3;
+parameter [2:0] l_F_toy_BB__6_4 = 3'd4;
 
 input  clk;
 input  clk2x;
@@ -139,7 +139,7 @@ reg  toy_1_exitcond_reg;
 
 always @(posedge clk) begin
 if (reset == 1'b1)
-	cur_state <= LEGUP_0;
+	cur_state <= l_0;
 else if (!fsm_stall)
 	cur_state <= next_state;
 end
@@ -148,20 +148,20 @@ always @(*)
 begin
 next_state = cur_state;
 case(cur_state)  // synthesis parallel_case  
-LEGUP_0:
+l_0:
 	if ((fsm_stall == 1'd0) && (start == 1'd1))
-		next_state = LEGUP_F_toy_BB__1_1;
-LEGUP_F_toy_BB__1_1:
-		next_state = LEGUP_F_toy_BB__1_2;
-LEGUP_F_toy_BB__1_2:
-		next_state = LEGUP_F_toy_BB__1_3;
-LEGUP_F_toy_BB__1_3:
+		next_state = l_F_toy_BB__1_1;
+l_F_toy_BB__1_1:
+		next_state = l_F_toy_BB__1_2;
+l_F_toy_BB__1_2:
+		next_state = l_F_toy_BB__1_3;
+l_F_toy_BB__1_3:
 	if ((fsm_stall == 1'd0) && (toy_1_exitcond_reg == 1'd1))
-		next_state = LEGUP_F_toy_BB__6_4;
+		next_state = l_F_toy_BB__6_4;
 	else if ((fsm_stall == 1'd0) && (toy_1_exitcond_reg == 1'd0))
-		next_state = LEGUP_F_toy_BB__1_1;
-LEGUP_F_toy_BB__6_4:
-		next_state = LEGUP_0;
+		next_state = l_F_toy_BB__1_1;
+l_F_toy_BB__6_4:
+		next_state = l_0;
 default:
 	next_state = cur_state;
 endcase
@@ -194,24 +194,24 @@ end
 always @(*) begin
 	/* toy: %1*/
 	/*   %i.01 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if ((((cur_state == LEGUP_0) & (fsm_stall == 1'd0)) & (start == 1'd1))) begin
+	if ((((cur_state == l_0) & (fsm_stall == 1'd0)) & (start == 1'd1))) begin
 		toy_1_i01 = 32'd0;
 	end
 	/* toy: %1*/
 	/*   %i.01 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	else /* if ((((cur_state == LEGUP_F_toy_BB__1_3) & (fsm_stall == 1'd0)) & (toy_1_exitcond_reg == 1'd0))) */ begin
+	else /* if ((((cur_state == l_F_toy_BB__1_3) & (fsm_stall == 1'd0)) & (toy_1_exitcond_reg == 1'd0))) */ begin
 		toy_1_i01 = toy_1_5_reg;
 	end
 end
 always @(posedge clk) begin
 	/* toy: %1*/
 	/*   %i.01 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if ((((cur_state == LEGUP_0) & (fsm_stall == 1'd0)) & (start == 1'd1))) begin
+	if ((((cur_state == l_0) & (fsm_stall == 1'd0)) & (start == 1'd1))) begin
 		toy_1_i01_reg <= toy_1_i01;
 	end
 	/* toy: %1*/
 	/*   %i.01 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if ((((cur_state == LEGUP_F_toy_BB__1_3) & (fsm_stall == 1'd0)) & (toy_1_exitcond_reg == 1'd0))) begin
+	if ((((cur_state == l_F_toy_BB__1_3) & (fsm_stall == 1'd0)) & (toy_1_exitcond_reg == 1'd0))) begin
 		toy_1_i01_reg <= toy_1_i01;
 	end
 end
@@ -233,7 +233,7 @@ end
 always @(posedge clk) begin
 	/* toy: %1*/
 	/*   %scevgep = getelementptr i32* %c, i32 %i.01, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		toy_1_scevgep_reg <= toy_1_scevgep;
 	end
 end
@@ -260,7 +260,7 @@ end
 always @(posedge clk) begin
 	/* toy: %1*/
 	/*   %5 = add nsw i32 %i.01, 1, !MSB !5, !LSB !2, !extendFrom !5*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		toy_1_5_reg <= toy_1_5;
 	end
 end
@@ -272,17 +272,17 @@ end
 always @(posedge clk) begin
 	/* toy: %1*/
 	/*   %exitcond = icmp eq i32 %5, 1000, !MSB !2, !LSB !2, !extendFrom !2*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		toy_1_exitcond_reg <= toy_1_exitcond;
 	end
 end
 always @(posedge clk) begin
-	if ((cur_state == LEGUP_0)) begin
+	if ((cur_state == l_0)) begin
 		finish <= 1'd0;
 	end
 	/* toy: %6*/
 	/*   ret void, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__6_4)) begin
+	if ((cur_state == l_F_toy_BB__6_4)) begin
 		finish <= (fsm_stall == 1'd0);
 	end
 end
@@ -293,7 +293,7 @@ always @(*) begin
 	main_0_a_enable_a = 1'd0;
 	/* toy: %1*/
 	/*   %2 = load i32* %scevgep3, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		main_0_a_enable_a = 1'd1;
 	end
 end
@@ -301,7 +301,7 @@ always @(*) begin
 	main_0_a_address_a = 10'd0;
 	/* toy: %1*/
 	/*   %2 = load i32* %scevgep3, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		main_0_a_address_a = (toy_1_scevgep3 >>> 3'd2);
 	end
 end
@@ -317,7 +317,7 @@ always @(*) begin
 	main_0_b_enable_a = 1'd0;
 	/* toy: %1*/
 	/*   %3 = load i32* %scevgep2, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		main_0_b_enable_a = 1'd1;
 	end
 end
@@ -325,7 +325,7 @@ always @(*) begin
 	main_0_b_address_a = 10'd0;
 	/* toy: %1*/
 	/*   %3 = load i32* %scevgep2, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_toy_BB__1_1)) begin
+	if ((cur_state == l_F_toy_BB__1_1)) begin
 		main_0_b_address_a = (toy_1_scevgep2 >>> 3'd2);
 	end
 end
@@ -338,7 +338,7 @@ always @(*) begin
 	main_0_c_write_enable_a = 1'd0;
 	/* toy: %1*/
 	/*   store i32 %4, i32* %scevgep, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__1_2)) begin
+	if ((cur_state == l_F_toy_BB__1_2)) begin
 		main_0_c_write_enable_a = 1'd1;
 	end
 end
@@ -346,7 +346,7 @@ always @(*) begin
 	main_0_c_in_a = 0;
 	/* toy: %1*/
 	/*   store i32 %4, i32* %scevgep, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__1_2)) begin
+	if ((cur_state == l_F_toy_BB__1_2)) begin
 		main_0_c_in_a = toy_1_4;
 	end
 end
@@ -355,7 +355,7 @@ always @(*) begin
 	main_0_c_enable_a = 1'd0;
 	/* toy: %1*/
 	/*   store i32 %4, i32* %scevgep, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__1_2)) begin
+	if ((cur_state == l_F_toy_BB__1_2)) begin
 		main_0_c_enable_a = 1'd1;
 	end
 end
@@ -363,7 +363,7 @@ always @(*) begin
 	main_0_c_address_a = 10'd0;
 	/* toy: %1*/
 	/*   store i32 %4, i32* %scevgep, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_toy_BB__1_2)) begin
+	if ((cur_state == l_F_toy_BB__1_2)) begin
 		main_0_c_address_a = (toy_1_scevgep_reg >>> 3'd2);
 	end
 end
@@ -428,17 +428,17 @@ module main
 	main_0_c_out_b
 );
 
-parameter [3:0] LEGUP_0 = 4'd0;
-parameter [3:0] LEGUP_F_main_BB__0_1 = 4'd1;
-parameter [3:0] LEGUP_F_main_BB__1_2 = 4'd2;
-parameter [3:0] LEGUP_F_main_BB__1_3 = 4'd3;
-parameter [3:0] LEGUP_F_main_BB__1_4 = 4'd4;
-parameter [3:0] LEGUP_F_main_BB__6_5 = 4'd5;
-parameter [3:0] LEGUP_F_main_BB__6_7 = 4'd7;
-parameter [3:0] LEGUP_F_main_BB__10_8 = 4'd8;
-parameter [3:0] LEGUP_F_main_BB__10_9 = 4'd9;
-parameter [3:0] LEGUP_F_main_BB__14_10 = 4'd10;
-parameter [3:0] LEGUP_function_call_6 = 4'd6;
+parameter [3:0] l_0 = 4'd0;
+parameter [3:0] l_F_main_BB__0_1 = 4'd1;
+parameter [3:0] l_F_main_BB__1_2 = 4'd2;
+parameter [3:0] l_F_main_BB__1_3 = 4'd3;
+parameter [3:0] l_F_main_BB__1_4 = 4'd4;
+parameter [3:0] l_F_main_BB__6_5 = 4'd5;
+parameter [3:0] l_F_main_BB__6_7 = 4'd7;
+parameter [3:0] l_F_main_BB__10_8 = 4'd8;
+parameter [3:0] l_F_main_BB__10_9 = 4'd9;
+parameter [3:0] l_F_main_BB__14_10 = 4'd10;
+parameter [3:0] l_function_call_6 = 4'd6;
 
 input  clk;
 input  clk2x;
@@ -514,8 +514,8 @@ reg [10:0] main_10_13;
 reg [10:0] main_10_13_reg;
 reg  main_10_exitcond2;
 reg  main_10_exitcond2_reg;
-reg  legup_function_call;
-reg  legup_mult_main_1_3_en;
+reg  l_function_call;
+reg  l_mult_main_1_3_en;
 reg [11:0] main_1_3_stage0_reg;
 
 // Local Rams
@@ -528,7 +528,7 @@ always @(posedge clk)
 	if (!fsm_stall) begin
 	/* main: %10*/
 	/*   %12 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i32 0, i32 0), i32 %11) #2, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_main_BB__10_9)) begin
+	if ((cur_state == l_F_main_BB__10_9)) begin
 		$write("%d\n", $signed(main_10_11));
 		// to fix quartus warning
 		if (reset == 1'b0 && ^(main_10_11) === 1'bX) finish <= 0;
@@ -537,7 +537,7 @@ end
 /* synthesis translate_on */
 always @(posedge clk) begin
 if (reset == 1'b1)
-	cur_state <= LEGUP_0;
+	cur_state <= l_0;
 else if (!fsm_stall)
 	cur_state <= next_state;
 end
@@ -546,36 +546,36 @@ always @(*)
 begin
 next_state = cur_state;
 case(cur_state)  // synthesis parallel_case  
-LEGUP_0:
+l_0:
 	if ((fsm_stall == 1'd0) && (start == 1'd1))
-		next_state = LEGUP_F_main_BB__0_1;
-LEGUP_F_main_BB__0_1:
-		next_state = LEGUP_F_main_BB__1_2;
-LEGUP_F_main_BB__10_8:
-		next_state = LEGUP_F_main_BB__10_9;
-LEGUP_F_main_BB__10_9:
+		next_state = l_F_main_BB__0_1;
+l_F_main_BB__0_1:
+		next_state = l_F_main_BB__1_2;
+l_F_main_BB__10_8:
+		next_state = l_F_main_BB__10_9;
+l_F_main_BB__10_9:
 	if ((fsm_stall == 1'd0) && (main_10_exitcond2_reg == 1'd1))
-		next_state = LEGUP_F_main_BB__14_10;
+		next_state = l_F_main_BB__14_10;
 	else if ((fsm_stall == 1'd0) && (main_10_exitcond2_reg == 1'd0))
-		next_state = LEGUP_F_main_BB__10_8;
-LEGUP_F_main_BB__14_10:
-		next_state = LEGUP_0;
-LEGUP_F_main_BB__1_2:
-		next_state = LEGUP_F_main_BB__1_3;
-LEGUP_F_main_BB__1_3:
-		next_state = LEGUP_F_main_BB__1_4;
-LEGUP_F_main_BB__1_4:
+		next_state = l_F_main_BB__10_8;
+l_F_main_BB__14_10:
+		next_state = l_0;
+l_F_main_BB__1_2:
+		next_state = l_F_main_BB__1_3;
+l_F_main_BB__1_3:
+		next_state = l_F_main_BB__1_4;
+l_F_main_BB__1_4:
 	if ((fsm_stall == 1'd0) && (main_1_exitcond5_reg == 1'd1))
-		next_state = LEGUP_F_main_BB__6_5;
+		next_state = l_F_main_BB__6_5;
 	else if ((fsm_stall == 1'd0) && (main_1_exitcond5_reg == 1'd0))
-		next_state = LEGUP_F_main_BB__1_2;
-LEGUP_F_main_BB__6_5:
-		next_state = LEGUP_function_call_6;
-LEGUP_F_main_BB__6_7:
-		next_state = LEGUP_F_main_BB__10_8;
-LEGUP_function_call_6:
+		next_state = l_F_main_BB__1_2;
+l_F_main_BB__6_5:
+		next_state = l_function_call_6;
+l_F_main_BB__6_7:
+		next_state = l_F_main_BB__10_8;
+l_function_call_6:
 	if ((fsm_stall == 1'd0) && (toy_finish == 1'd1))
-		next_state = LEGUP_F_main_BB__6_7;
+		next_state = l_F_main_BB__6_7;
 default:
 	next_state = cur_state;
 endcase
@@ -593,24 +593,24 @@ end
 always @(*) begin
 	/* main: %1*/
 	/*   %2 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if (((cur_state == LEGUP_F_main_BB__0_1) & (fsm_stall == 1'd0))) begin
+	if (((cur_state == l_F_main_BB__0_1) & (fsm_stall == 1'd0))) begin
 		main_1_2 = 32'd0;
 	end
 	/* main: %1*/
 	/*   %2 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	else /* if ((((cur_state == LEGUP_F_main_BB__1_4) & (fsm_stall == 1'd0)) & (main_1_exitcond5_reg == 1'd0))) */ begin
+	else /* if ((((cur_state == l_F_main_BB__1_4) & (fsm_stall == 1'd0)) & (main_1_exitcond5_reg == 1'd0))) */ begin
 		main_1_2 = main_1_5_reg;
 	end
 end
 always @(posedge clk) begin
 	/* main: %1*/
 	/*   %2 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if (((cur_state == LEGUP_F_main_BB__0_1) & (fsm_stall == 1'd0))) begin
+	if (((cur_state == l_F_main_BB__0_1) & (fsm_stall == 1'd0))) begin
 		main_1_2_reg <= main_1_2;
 	end
 	/* main: %1*/
 	/*   %2 = phi i32 [ 0, %0 ], [ %5, %1 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if ((((cur_state == LEGUP_F_main_BB__1_4) & (fsm_stall == 1'd0)) & (main_1_exitcond5_reg == 1'd0))) begin
+	if ((((cur_state == l_F_main_BB__1_4) & (fsm_stall == 1'd0)) & (main_1_exitcond5_reg == 1'd0))) begin
 		main_1_2_reg <= main_1_2;
 	end
 end
@@ -635,7 +635,7 @@ end
 always @(posedge clk) begin
 	/* main: %1*/
 	/*   %scevgep2 = getelementptr [1000 x i32]* %b, i32 0, i32 %2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_1_scevgep2_reg <= main_1_scevgep2;
 	end
 end
@@ -647,7 +647,7 @@ end
 always @(posedge clk) begin
 	/* main: %1*/
 	/*   %5 = add nsw i32 %2, 1, !MSB !7, !LSB !2, !extendFrom !7*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_1_5_reg <= main_1_5;
 	end
 end
@@ -659,7 +659,7 @@ end
 always @(posedge clk) begin
 	/* main: %1*/
 	/*   %exitcond5 = icmp eq i32 %5, 1000, !MSB !2, !LSB !2, !extendFrom !2*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_1_exitcond5_reg <= main_1_exitcond5;
 	end
 end
@@ -684,24 +684,24 @@ end
 always @(*) begin
 	/* main: %10*/
 	/*   %i1.01 = phi i32 [ 0, %6 ], [ %13, %10 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if (((cur_state == LEGUP_F_main_BB__6_7) & (fsm_stall == 1'd0))) begin
+	if (((cur_state == l_F_main_BB__6_7) & (fsm_stall == 1'd0))) begin
 		main_10_i101 = 32'd0;
 	end
 	/* main: %10*/
 	/*   %i1.01 = phi i32 [ 0, %6 ], [ %13, %10 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	else /* if ((((cur_state == LEGUP_F_main_BB__10_9) & (fsm_stall == 1'd0)) & (main_10_exitcond2_reg == 1'd0))) */ begin
+	else /* if ((((cur_state == l_F_main_BB__10_9) & (fsm_stall == 1'd0)) & (main_10_exitcond2_reg == 1'd0))) */ begin
 		main_10_i101 = main_10_13_reg;
 	end
 end
 always @(posedge clk) begin
 	/* main: %10*/
 	/*   %i1.01 = phi i32 [ 0, %6 ], [ %13, %10 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if (((cur_state == LEGUP_F_main_BB__6_7) & (fsm_stall == 1'd0))) begin
+	if (((cur_state == l_F_main_BB__6_7) & (fsm_stall == 1'd0))) begin
 		main_10_i101_reg <= main_10_i101;
 	end
 	/* main: %10*/
 	/*   %i1.01 = phi i32 [ 0, %6 ], [ %13, %10 ], !MSB !3, !LSB !2, !extendFrom !3*/
-	if ((((cur_state == LEGUP_F_main_BB__10_9) & (fsm_stall == 1'd0)) & (main_10_exitcond2_reg == 1'd0))) begin
+	if ((((cur_state == l_F_main_BB__10_9) & (fsm_stall == 1'd0)) & (main_10_exitcond2_reg == 1'd0))) begin
 		main_10_i101_reg <= main_10_i101;
 	end
 end
@@ -723,7 +723,7 @@ end
 always @(posedge clk) begin
 	/* main: %10*/
 	/*   %13 = add nsw i32 %i1.01, 1, !MSB !7, !LSB !2, !extendFrom !7*/
-	if ((cur_state == LEGUP_F_main_BB__10_8)) begin
+	if ((cur_state == l_F_main_BB__10_8)) begin
 		main_10_13_reg <= main_10_13;
 	end
 end
@@ -735,45 +735,45 @@ end
 always @(posedge clk) begin
 	/* main: %10*/
 	/*   %exitcond2 = icmp eq i32 %13, 1000, !MSB !2, !LSB !2, !extendFrom !2*/
-	if ((cur_state == LEGUP_F_main_BB__10_8)) begin
+	if ((cur_state == l_F_main_BB__10_8)) begin
 		main_10_exitcond2_reg <= main_10_exitcond2;
 	end
 end
 always @(*) begin
-	legup_function_call = 1'd0;
+	l_function_call = 1'd0;
 	/* main: %6*/
 	/*   call fastcc void @toy(i32* %7, i32* %8, i32* %9) #2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_function_call_6)) begin
-		legup_function_call = 1'd1;
+	if ((cur_state == l_function_call_6)) begin
+		l_function_call = 1'd1;
 	end
 end
 always @(*) begin
-	legup_mult_main_1_3_en = ~((fsm_stall | legup_function_call));
+	l_mult_main_1_3_en = ~((fsm_stall | l_function_call));
 end
 always @(posedge clk) begin
 	/* main: %1*/
 	/*   %3 = mul i32 %2, -1, !MSB !4, !LSB !2, !extendFrom !5*/
-	if ((legup_mult_main_1_3_en == 1'd1)) begin
+	if ((l_mult_main_1_3_en == 1'd1)) begin
 		main_1_3_stage0_reg <= ({2'd0,main_1_2_reg} * $signed(-32'd1));
 	end
 end
 always @(posedge clk) begin
-	if ((cur_state == LEGUP_0)) begin
+	if ((cur_state == l_0)) begin
 		finish <= 1'd0;
 	end
 	/* main: %14*/
 	/*   ret i32 0, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__14_10)) begin
+	if ((cur_state == l_F_main_BB__14_10)) begin
 		finish <= (fsm_stall == 1'd0);
 	end
 end
 always @(posedge clk) begin
-	if ((cur_state == LEGUP_0)) begin
+	if ((cur_state == l_0)) begin
 		return_val <= 0;
 	end
 	/* main: %14*/
 	/*   ret i32 0, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__14_10)) begin
+	if ((cur_state == l_F_main_BB__14_10)) begin
 		return_val <= 32'd0;
 	end
 end
@@ -781,10 +781,10 @@ always @(posedge clk) begin
 	toy_start <= 1'd0;
 	/* main: %6*/
 	/*   call fastcc void @toy(i32* %7, i32* %8, i32* %9) #2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__6_5)) begin
+	if ((cur_state == l_F_main_BB__6_5)) begin
 		toy_start <= 1'd1;
 	end
-	if ((cur_state == LEGUP_F_main_BB__6_7)) begin
+	if ((cur_state == l_F_main_BB__6_7)) begin
 		toy_start <= 1'd0;
 	end
 end
@@ -792,7 +792,7 @@ always @(posedge clk) begin
 	toy_arg_a <= 0;
 	/* main: %6*/
 	/*   call fastcc void @toy(i32* %7, i32* %8, i32* %9) #2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__6_5)) begin
+	if ((cur_state == l_F_main_BB__6_5)) begin
 		toy_arg_a <= main_6_7;
 	end
 end
@@ -800,7 +800,7 @@ always @(posedge clk) begin
 	toy_arg_b <= 0;
 	/* main: %6*/
 	/*   call fastcc void @toy(i32* %7, i32* %8, i32* %9) #2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__6_5)) begin
+	if ((cur_state == l_F_main_BB__6_5)) begin
 		toy_arg_b <= main_6_8;
 	end
 end
@@ -808,7 +808,7 @@ always @(posedge clk) begin
 	toy_arg_c <= 0;
 	/* main: %6*/
 	/*   call fastcc void @toy(i32* %7, i32* %8, i32* %9) #2, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__6_5)) begin
+	if ((cur_state == l_F_main_BB__6_5)) begin
 		toy_arg_c <= main_6_9;
 	end
 end
@@ -816,7 +816,7 @@ always @(*) begin
 	main_0_a_write_enable_a = 1'd0;
 	/* main: %1*/
 	/*   store i32 %2, i32* %scevgep3, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_0_a_write_enable_a = 1'd1;
 	end
 end
@@ -824,7 +824,7 @@ always @(*) begin
 	main_0_a_in_a = 0;
 	/* main: %1*/
 	/*   store i32 %2, i32* %scevgep3, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_0_a_in_a = {22'd0,main_1_2_reg};
 	end
 end
@@ -833,7 +833,7 @@ always @(*) begin
 	main_0_a_enable_a = 1'd0;
 	/* main: %1*/
 	/*   store i32 %2, i32* %scevgep3, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_0_a_enable_a = 1'd1;
 	end
 end
@@ -841,7 +841,7 @@ always @(*) begin
 	main_0_a_address_a = 10'd0;
 	/* main: %1*/
 	/*   store i32 %2, i32* %scevgep3, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_2)) begin
+	if ((cur_state == l_F_main_BB__1_2)) begin
 		main_0_a_address_a = (main_1_scevgep3 >>> 3'd2);
 	end
 end
@@ -854,7 +854,7 @@ always @(*) begin
 	main_0_b_write_enable_a = 1'd0;
 	/* main: %1*/
 	/*   store i32 %4, i32* %scevgep2, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_3)) begin
+	if ((cur_state == l_F_main_BB__1_3)) begin
 		main_0_b_write_enable_a = 1'd1;
 	end
 end
@@ -862,7 +862,7 @@ always @(*) begin
 	main_0_b_in_a = 0;
 	/* main: %1*/
 	/*   store i32 %4, i32* %scevgep2, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_3)) begin
+	if ((cur_state == l_F_main_BB__1_3)) begin
 		main_0_b_in_a = {{19{main_1_4[12]}},main_1_4};
 	end
 end
@@ -871,7 +871,7 @@ always @(*) begin
 	main_0_b_enable_a = 1'd0;
 	/* main: %1*/
 	/*   store i32 %4, i32* %scevgep2, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_3)) begin
+	if ((cur_state == l_F_main_BB__1_3)) begin
 		main_0_b_enable_a = 1'd1;
 	end
 end
@@ -879,7 +879,7 @@ always @(*) begin
 	main_0_b_address_a = 10'd0;
 	/* main: %1*/
 	/*   store i32 %4, i32* %scevgep2, align 4, !MSB !1, !LSB !2, !extendFrom !1*/
-	if ((cur_state == LEGUP_F_main_BB__1_3)) begin
+	if ((cur_state == l_F_main_BB__1_3)) begin
 		main_0_b_address_a = (main_1_scevgep2_reg >>> 3'd2);
 	end
 end
@@ -895,7 +895,7 @@ always @(*) begin
 	main_0_c_enable_a = 1'd0;
 	/* main: %10*/
 	/*   %11 = load i32* %scevgep, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_main_BB__10_8)) begin
+	if ((cur_state == l_F_main_BB__10_8)) begin
 		main_0_c_enable_a = 1'd1;
 	end
 end
@@ -903,7 +903,7 @@ always @(*) begin
 	main_0_c_address_a = 10'd0;
 	/* main: %10*/
 	/*   %11 = load i32* %scevgep, align 4, !MSB !4, !LSB !2, !extendFrom !4*/
-	if ((cur_state == LEGUP_F_main_BB__10_8)) begin
+	if ((cur_state == l_F_main_BB__10_8)) begin
 		main_0_c_address_a = (main_10_scevgep >>> 3'd2);
 	end
 end

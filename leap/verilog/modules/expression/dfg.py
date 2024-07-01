@@ -118,11 +118,17 @@ def createArrayIndexingNode(arrayName: DFGNode, index: DFGNode):
     return node
 
 
+def createMuxNode(variableName, cond: DFGNode, branches: list):
+    node = DFGNode(variableName)
+    node.operation = SOPType.CONDITIONAL_ASSIGN
+    node.children = [cond] + branches
+    return node
+
 class DFGraph:
     def __init__(self) -> None:
         self.nodes = []
         self.__node_trav_index = 0
-        self.__variables = {}
+        self.__variable_definitions = {}
         self.__variable_fanouts = {}
         self.__variable_fanins = {}
         self.__outputs = set()
@@ -132,26 +138,40 @@ class DFGraph:
         assert isinstance(node, DFGNode), f"node = {node}"
         logger.debug(f"Adding node: {node}")
         if node.operation == SOPType.ASSIGN:
-            if node.variable_name not in self.__variables:
-                self.__variables[node.variable_name] = node
+            if node.variable_name not in self.__variable_definitions:
+                self.__variable_definitions[node.variable_name] = node
                 self.__variable_fanouts[node.variable_name] = set()
             else:
                 # we need to modify the variable
-                oldNode = self.__variables[node.variable_name]
-                if oldNode.operation != SOPType.VARIABLE:
-                    logger.warning(f"Overwriting node: {oldNode}")
-                oldNode.operation = SOPType.ASSIGN
-                oldNode.children = node.children[:]
-                return
+                oldNode = self.__variable_definitions[node.variable_name]
+                if oldNode.operation == SOPType.VARIABLE:
+                    oldNode.operation = SOPType.ASSIGN
+                    oldNode.children = node.children[:]
+                    return
+                    logger.info(f"Overwriting node: {oldNode}")
+                elif oldNode.operation == SOPType.ASSIGN:
+                    logger.info(f"Overwriting node: {oldNode}")
+                    
+                    assert len(oldNode.children) == 1
+                    prevChild = oldNode.children[0]
+                    
+                    # we need to change the assign to a mux
+                    newChild = node.children[0]
+                    oldNode.operation = SOPType.ASSIGN
+                    oldNode.children = node.children[:]
+                    return
+                else:
+                    logger.error(f"Overwriting node: {oldNode}")
+                    return
         if node.isVariable():
             variable = node.variable_name
-            if variable in self.__variables:
+            if variable in self.__variable_definitions:
                 # we modify the variable
-                node.children = self.__variables[variable].children[:]
-                node.operation = self.__variables[variable].operation
+                node.children = self.__variable_definitions[variable].children[:]
+                node.operation = self.__variable_definitions[variable].operation
                 return
             else:
-                self.__variables[variable] = node
+                self.__variable_definitions[variable] = node
                 self.__variable_fanouts[variable] = set()
             if parentNode is not None:
                 self.__variable_fanouts[variable].add(node)
@@ -161,7 +181,7 @@ class DFGraph:
         self.nodes.append(node)
 
     def toGraphRec(self, node: DFGNode, graph: pgv.AGraph, visited: set) -> str:
-        if node.variable_name in self.__variables:
+        if node.variable_name in self.__variable_definitions:
             node_name: str = node.variable_name
             if node_name in visited:
                 return node_name

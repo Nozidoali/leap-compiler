@@ -17,3 +17,4 @@ class SOPType(Enum):
     FUNCTION = "$"
     ASSIGN = "="
     CONST = "const"
+    CONDITIONAL_ASSIGN = "?="
