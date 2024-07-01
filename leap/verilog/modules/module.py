@@ -83,13 +83,11 @@ class Module:
         self.internal_signals = {}
         for item in module_items:
             statements = []
-            print(f"Item: {item}")
             if isinstance(item, tuple):
                 statements = [item]
             if isinstance(item, list):
                 statements = item
             for statement in statements:
-                print(f"Statement: {statement}")
                 bodyType = ModuleBodyType.fromString(statement[0])
                 match bodyType:
                     case ModuleBodyType.PORT_DECLARATION:
@@ -105,9 +103,12 @@ class Module:
                     case ModuleBodyType.VARIABLE_ASSIGNMENT:
                         logger.debug(f"Variable Assignment: {statement}")
                         assignment = statement[1]
-                        self.dfg.addNode(createAssignNode(
+                        newNodes = createAssignNodes(
                             assignment.expression, assignment.target
-                        ))
+                        )
+                        for node in newNodes:
+                            self.dfg.addNode(node)
+
                     case _:
                         pass
 

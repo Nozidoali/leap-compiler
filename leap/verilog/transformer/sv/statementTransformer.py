@@ -17,13 +17,10 @@ from ...modules import *
 
 from enum import Enum, auto
 
-class ConditionalType(Enum):
-    IF = auto()
-    ELSE_IF = auto()
-    ELSE = auto()
-
 class StatementTransformer(Transformer):
     def single_statement(self, items):
+        if isinstance(items[0], list):
+            return items[0]
         return [items[0]]
 
     def statement_block(self, items):
@@ -57,10 +54,33 @@ class StatementTransformer(Transformer):
         return all_items
 
     def if_statement(self, items):
-        return items[1]
+        statements = []
+        for statement in items[1]:
+            logger.debug(f"statement = {statement}")
+            sType, assign = statement
+            if sType == "vairable_assignment":
+                assign.setCondition(items[0])
+                statements.append((sType, assign))
+            else:
+                statements.append(statement)
+        return statements
     
     def else_if_statements(self, items):
-        return items[1]
+        statements = []
+        for statement in items[1]:
+            logger.debug(f"statement = {statement}")
+            sType, assign = statement
+            if sType == "vairable_assignment":
+                assign.setCondition(items[0])
+                statements.append((sType, assign))
+            else:
+                statements.append(statement)
+        return statements
     
     def else_statement(self, items):
-        return items[0]
+        statements = []
+        for statement in items[0]:
+            logger.debug(f"statement = {statement}")
+            sType, assign = statement
+            statements.append(statement)
+        return statements

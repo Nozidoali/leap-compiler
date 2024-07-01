@@ -18,10 +18,10 @@ from ...modules import *
 
 class ExpressionTransformer(Transformer):
     def extended_based_number(self, items):
-        return DFGNode(items[0])
+        return createConstantNode(items[0])
 
     def regular_number(self, items):
-        return DFGNode(items[0])
+        return createConstantNode(items[0])
 
     def macro_usage(self, items):
         return DFGNode(items[0])
@@ -38,6 +38,9 @@ class ExpressionTransformer(Transformer):
     def function_call(self, items):
         function_name = items[0]
         return createFuncCallNode(function_name, items[1:])
+
+    def function_parameters(self, items):
+        return items
 
     def dollar_indentifier(self, items):
         return str(items[0])

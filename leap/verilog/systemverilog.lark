@@ -155,7 +155,7 @@ dollar_indentifier: "$" /[a-zA-Z_][a-zA-Z0-9_]*/
 
 // 5.1 Function calls
 function_call: dollar_indentifier function_parameters?
-function_parameters: "(" expression ")"
+?function_parameters: "(" expression ")"
 
 // 6. Signals
 

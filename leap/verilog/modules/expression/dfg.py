@@ -29,10 +29,18 @@ class DFGNode:
 
     def isVariable(self):
         return self.operation == SOPType.VARIABLE
+    
+    def isConstant(self):
+        return self.operation == SOPType.CONST
 
 def createVariableNode(variable_name: str):
     node = DFGNode(variable_name)
     node.operation = SOPType.VARIABLE
+    return node
+
+def createConstantNode(value: int):
+    node = DFGNode(str(value))
+    node.operation = SOPType.CONST
     return node
 
 def createBinaryOpNode(op: BOPType | str, left: DFGNode, right: DFGNode):
@@ -66,11 +74,28 @@ def createFuncCallNode(func_name: str, children: list):
     node.children = children
     return node
 
-def createAssignNode(assignFrom: DFGNode, assignTo: str):
-    node = DFGNode(assignTo)
+def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode):
+    newNodes = []
+    if isinstance(assignTo, str):
+        node = DFGNode(assignTo)
+    else:
+        node = DFGNode("=")
+        child: DFGNode
+        for child in assignTo.children:
+            assert child.isVariable() or child.isConstant(), f"child = {child}"
+            assert child.children == [], f"child = {child}"
+            
+            # we need to create a new node
+            newNode = DFGNode(child.variable_name)
+            newNode.operation = SOPType.ASSIGN
+            newNode.children = [node]
+            newNodes.append(newNode)
+    
     node.operation = SOPType.ASSIGN
     node.children = [assignFrom]
-    return node
+    newNodes.append(node)
+    
+    return newNodes
 
 def createArraySlicingNode(arrayName: DFGNode, indexFrom: DFGNode, indexTo: DFGNode):
     node = DFGNode(AOPType.SLICE.value)
@@ -95,8 +120,8 @@ class DFGraph:
         self.__inputs = []
 
     def addNode(self, node: DFGNode, parentNode: DFGNode = None):
-        assert isinstance(node, DFGNode)
-        logger.info(f"Adding node: {node}")
+        assert isinstance(node, DFGNode), f"node = {node}"
+        logger.debug(f"Adding node: {node}")
         if node.operation == SOPType.ASSIGN:
             if node.variable_name not in self.__variables:
                 self.__variables[node.variable_name] = node
@@ -135,7 +160,7 @@ class DFGraph:
         else:
             self.__node_trav_index += 1
             node_name: str = f"{str(node.variable_name)}_{self.__node_trav_index}"
-        print(f"Node: {node}, children: {node.children}")
+        logger.debug(f"Node: {node}, children: {node.children}")
         graph.add_node(node_name, label=node.variable_name)
         for child in node.children:
             childName = self.toGraphRec(child, graph, visited)

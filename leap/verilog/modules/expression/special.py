@@ -16,3 +16,4 @@ class SOPType(Enum):
     CONCAT = "\{\}"
     FUNCTION = "$"
     ASSIGN = "="
+    CONST = "const"

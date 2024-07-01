@@ -45,7 +45,6 @@ class ModuleTransformer(Transformer):
                 param_list.extend(item)
             else:
                 assert False, f"item = {item}"
-
         return module_name, param_list, port_list
 
     @v_args(inline=True)
@@ -60,9 +59,8 @@ class ModuleTransformer(Transformer):
 
     @v_args(inline=True)
     def variable_assignment(self, signal, expression):
-        assert isinstance(signal, str)
-        print(f"signal = {signal}", f"expression = {expression}")
-        assert isinstance(expression, DFGNode)
+        assert isinstance(signal, str) or isinstance(signal, DFGNode), f"signal = {signal}"
+        assert isinstance(expression, DFGNode), f"expression = {expression}"
         return "variable_assignment", Assignment(signal, expression)
 
     def system_task(self, items):
@@ -73,10 +71,6 @@ class ModuleTransformer(Transformer):
 
     def define_parameter(self, items):
         return "define_parameter", []
-
-    @v_args(inline=True)
-    def array_indexing(self, name, expression):
-        return name
 
     @v_args(inline=True)
     def variable_name(self, name):
