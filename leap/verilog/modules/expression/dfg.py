@@ -113,26 +113,30 @@ class DFGraph:
             self.addNode(child, parentNode=node)
         self.nodes.append(node)
 
-    def toGraphRec(self, node: DFGNode, graph: pgv.AGraph):
+    def toGraphRec(self, node: DFGNode, graph: pgv.AGraph, visited: set) -> str:
         if node.variable_name in self.__variables:
             node_name: str = node.variable_name
+            if node_name in visited:
+                return node_name
+            visited.add(node_name)
         else:
             self.__node_trav_index += 1
             node_name: str = f"{str(node.variable_name)}_{self.__node_trav_index}"
         graph.add_node(node_name, label=node.variable_name)
         for child in node.children:
-            childName = self.toGraphRec(child, graph)
+            childName = self.toGraphRec(child, graph, visited)
             graph.add_edge(childName, node_name)
         return node_name
 
     def toGraph(self) -> pgv.AGraph:
         self.__node_trav_index = 0
         graph = pgv.AGraph(directed=True)
+        visited = set()
         for node in self.nodes:
             if node.operation != SOPType.ASSIGN:
                 continue
             if node.variable_name not in self.__variable_fanouts:
                 continue
             if len(self.__variable_fanouts[node.variable_name]) == 0:
-                self.toGraphRec(node, graph)
+                self.toGraphRec(node, graph, visited)
         return graph
