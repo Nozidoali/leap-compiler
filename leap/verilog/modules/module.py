@@ -105,7 +105,9 @@ class Module:
                         assignment = statement[1]
 
                         newNodes = createAssignNodes(
-                            assignment.expression, assignment.target, assignment.condition
+                            assignment.expression,
+                            assignment.target,
+                            assignment.condition,
                         )
                         for node in newNodes:
                             self.dfg.addNode(node)

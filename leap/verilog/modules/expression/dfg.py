@@ -34,170 +34,83 @@ class DFGNode:
         return self.operation == SOPType.CONST
 
 
-def createVariableNode(variable_name: str):
-    node = DFGNode(variable_name)
-    node.operation = SOPType.VARIABLE
-    return node
-
-
-def createConstantNode(value: int):
-    node = DFGNode(str(value))
-    node.operation = SOPType.CONST
-    return node
-
-
-def createBinaryOpNode(op: BOPType | str, left: DFGNode, right: DFGNode):
-    if isinstance(op, str):
-        op = BOPType.fromString(op)
-    node = DFGNode(str(op.value))
-    node.operation = op
-    node.children = [left, right]
-    return node
-
-
-def createUnaryOpNode(op: UOPType | str, child: DFGNode):
-    if isinstance(op, str):
-        op = UOPType.fromString(op)
-    node = DFGNode(str(op.value))
-    node.operation = op
-    node.children = [child]
-    return node
-
-
-def createConcatOpNode(children: list):
-    node = DFGNode("\{\}")
-    node.operation = SOPType.CONCAT
-    assert isinstance(children, list)
-    node.children = children
-    return node
-
-
-def createFuncCallNode(func_name: str, children: list):
-    node = DFGNode(func_name)
-    node.operation = SOPType.FUNCTION
-    assert isinstance(children, list)
-    node.children = children
-    return node
-
-
-def _createInputAssignNode(assignFrom: DFGNode):
-    node = DFGNode("=")
-    node.operation = SOPType.WIRE
-    node.children = [assignFrom]
-    return node
-
-
-def _createOutputAssignNode(assignFrom: DFGNode, assignTo: str, condition: DFGNode = None):
-    node = DFGNode(assignTo)
-    if condition is not None:
-        node.operation = SOPType.CONDITIONAL_ASSIGN
-        node.children = [condition, assignFrom]
-    else:
-        node.operation = SOPType.ASSIGN
-        node.children = [assignFrom]
-    return node
-
-
-def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode, condition: DFGNode = None):
-    newNodes = []
-
-    node = _createInputAssignNode(assignFrom)
-    newNodes.append(node)
-    
-    if isinstance(assignTo, str):
-        newNodes.append(_createOutputAssignNode(node, assignTo, condition))
-    else:
-        child: DFGNode
-        for child in assignTo.children:
-            assert child.isVariable() or child.isConstant(), f"child = {child}"
-            assert child.children == [], f"child = {child}"
-
-            newNodes.append(_createOutputAssignNode(
-                node, 
-                child.variable_name, 
-            condition))
-
-    return newNodes
-
-
-def createArraySlicingNode(arrayName: DFGNode, indexFrom: DFGNode, indexTo: DFGNode):
-    node = DFGNode(AOPType.SLICE.value)
-    node.operation = AOPType.SLICE
-    node.children = [arrayName, indexFrom, indexTo]
-    return node
-
-
-def createArrayIndexingNode(arrayName: DFGNode, index: DFGNode):
-    node = DFGNode(AOPType.INDEX.value)
-    node.operation = AOPType.INDEX
-    node.children = [arrayName, index]
-    return node
-
-
-def createMuxNode(variableName, cond: DFGNode, branches: list):
-    node = DFGNode(variableName)
-    node.operation = SOPType.CONDITIONAL_ASSIGN
-    node.children = [cond] + branches
-    return node
-
 class DFGraph:
+    class Node:
+        def __init__(self, node: int) -> None:
+            self.node = node
+            self.data = None
+            self.label = None
+            self.children = []
+            self.parents = []
+
+        def __repr__(self) -> str:
+            return f"{self.node.variable_name} -> {self.children}"
+
     def __init__(self) -> None:
         self.nodes = []
+        self.__node_index: int = 0
         self.__node_trav_index = 0
         self.__variable_definitions = {}
         self.__variable_fanouts = {}
-        self.__variable_fanins = {}
-        self.__outputs = set()
-        self.__inputs = []
+
+        self.__nodes = []
+        self.__variable_to_node_index = {}
+        self.__operation_to_nodes_index = {
+            opName: []
+            for opName in [op.value for op in SOPType]
+            + [op.value for op in AOPType]
+            + [op.value for op in BOPType]
+            + [op.value for op in UOPType]
+        }
+
+    def createNewNode(self):
+        curr_index = self.__node_index
+        self.__node_index += 1
+        return curr_index
+
+    @staticmethod
+    def getVariableName(node: DFGNode):
+        if node.operation == SOPType.VARIABLE:
+            return node.variable_name
+        if node.operation == SOPType.CONDITIONAL_ASSIGN:
+            return node.variable_name
+        if node.operation == SOPType.ASSIGN:
+            return node.variable_name
+        if node.operation == SOPType.CONST:
+            return node.variable_name
+        return None
+
+    def insertNode(self, node: DFGNode):
+        variableName = self.getVariableName(node)
+        if variableName is not None and variableName in self.__variable_to_node_index:
+            index = self.__variable_to_node_index[variableName]
+            return index
+        # topological sort
+        children = []
+        for child in node.children:
+            index = self.insertNode(child)
+            children.append(index)
+        nodesWithSameOp = self.__operation_to_nodes_index[node.operation.value]
+        for index in nodesWithSameOp:
+            if self.__nodes[index].children == children:
+                return index
+        rootIndex = self.createNewNode()
+        if variableName is not None:
+            self.__variable_to_node_index[variableName] = rootIndex
+        self.__operation_to_nodes_index[node.operation.value].append(rootIndex)
+        newNode = self.Node(node)
+        newNode.children = children
+        newNode.data = node.variable_name
+        newNode.label = node.variable_name
+        for child in children:
+            self.__nodes[child].parents.append(rootIndex)
+        self.__nodes.append(newNode)
+        assert rootIndex == len(self.__nodes) - 1
+        return rootIndex
 
     def addNode(self, node: DFGNode, parentNode: DFGNode = None):
-        assert isinstance(node, DFGNode), f"node = {node}"
-        logger.debug(f"Adding node: {node}")
-        if node.operation == SOPType.ASSIGN or node.operation == SOPType.CONDITIONAL_ASSIGN:
-            if node.variable_name not in self.__variable_definitions:
-                self.__variable_definitions[node.variable_name] = node
-                self.__variable_fanouts[node.variable_name] = set()
-            else:
-                # we need to modify the variable
-                oldNode = self.__variable_definitions[node.variable_name]
-                if oldNode.operation == SOPType.VARIABLE:
-                    oldNode.operation = node.operation
-                    oldNode.children = node.children[:]
-                    return
-                    logger.info(f"Overwriting node: {oldNode}")
-                elif oldNode.operation == SOPType.ASSIGN:
-                    logger.info(f"Overwriting node: {oldNode}")
-                    
-                    assert len(oldNode.children) == 1, f"oldNode = {oldNode}, children = {oldNode.children}"
-                    prevChild = oldNode.children[0]
-                    
-                    # we need to change the assign to a mux
-                    oldNode.operation = SOPType.CONDITIONAL_ASSIGN
-                    oldNode.children = node.children[:] + [prevChild]
-                    return
-                elif oldNode.operation == SOPType.CONDITIONAL_ASSIGN:
-                    logger.info(f"Overwriting node: {oldNode}")
-                    oldNode.children = oldNode.children[:] + node.children[:]
-                    return
-                else:
-                    logger.error(f"Overwriting node: {oldNode}")
-                    return
-        elif node.isVariable():
-            variable = node.variable_name
-            if variable in self.__variable_definitions:
-                # we modify the variable
-                node.children = self.__variable_definitions[variable].children[:]
-                node.operation = self.__variable_definitions[variable].operation
-                return
-            else:
-                self.__variable_definitions[variable] = node
-                self.__variable_fanouts[variable] = set()
-            if parentNode is not None:
-                self.__variable_fanouts[variable].add(node)
-
-        for child in node.children:
-            self.addNode(child, parentNode=node)
-        self.nodes.append(node)
+        self.insertNode(node)
+        return
 
     def toGraphRec(self, node: DFGNode, graph: pgv.AGraph, visited: set) -> str:
         if node.variable_name in self.__variable_definitions:
@@ -217,15 +130,10 @@ class DFGraph:
         return node_name
 
     def toGraph(self) -> pgv.AGraph:
-        self.__node_trav_index = 0
         graph = pgv.AGraph(directed=True)
-        visited = set()
-        for node in self.nodes:
-            if node.operation != SOPType.ASSIGN and node.operation != SOPType.CONDITIONAL_ASSIGN:
-                continue
-            if node.variable_name not in self.__variable_fanouts:
-                continue
-            if len(self.__variable_fanouts[node.variable_name]) != 0:
-                continue
-            self.toGraphRec(node, graph, visited)
+        for i, node in enumerate(self.__nodes):
+            graph.add_node(i, label=node.label)
+            for child in node.children:
+                graph.add_edge(child, i)
         return graph
+
