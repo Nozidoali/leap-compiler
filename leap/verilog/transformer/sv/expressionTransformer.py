@@ -30,7 +30,7 @@ class ExpressionTransformer(Transformer):
         return createConcatOpNode(items)
 
     def repeated_concatenation(self, items):
-        return createConcatOpNode(items[1])
+        return createConcatOpNode([items[1]])
 
     def string(self, items):
         return DFGNode(items[0])
@@ -59,11 +59,11 @@ class ExpressionTransformer(Transformer):
 
         if isinstance(items[0], str):
             # this is a variable
-            return DFGNode(items[0])
+            return createVariableNode(items[0])
 
         if isinstance(items[0], DFGNode):
             return items[0]
 
-        print(f"items = {items}")
+        logger.error(f"items = {items}")
 
         return items[0]

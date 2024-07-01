@@ -102,10 +102,9 @@ class Module:
                                 self.internal_signals[port.getPortName()] = port
                     case ModuleBodyType.VARIABLE_ASSIGNMENT:
                         logger.debug(f"Variable Assignment: {statement}")
-                        print(f"Variable Assignment: {statement}")
                         signal = statement[1]
                         node = statement[2]
-                        self.dfg.add_node(node)
+                        self.dfg.addNode(createAssignNode(node, signal))
                     case _:
                         pass
 

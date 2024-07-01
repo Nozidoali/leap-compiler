@@ -24,7 +24,6 @@ class ConditionalType(Enum):
 
 class StatementTransformer(Transformer):
     def single_statement(self, items):
-        # print(f"items = {items}")
         return [items[0]]
 
     def statement_block(self, items):

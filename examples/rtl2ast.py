@@ -5,7 +5,7 @@
 Author: Hanyu Wang
 Created time: 2024-06-28 23:14:20
 Last Modified by: Hanyu Wang
-Last Modified time: 2024-07-01 13:56:18
+Last Modified time: 2024-07-01 16:02:48
 '''
 
 from leap import run_with_logger, Netlist, readVerilog, Module, DFGraph

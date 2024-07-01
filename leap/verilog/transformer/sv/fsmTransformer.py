@@ -5,7 +5,7 @@
 Author: Hanyu Wang
 Created time: 2024-06-28 14:32:55
 Last Modified by: Hanyu Wang
-Last Modified time: 2024-06-28 15:05:12
+Last Modified time: 2024-07-01 15:18:55
 '''
 
 import logging
@@ -56,7 +56,7 @@ class FSMTransformer(Transformer):
     def writeFSMtoFile(self, filename: str):
         fsm = pgv.AGraph(directed=True)
         for state in self.states:
-            fsm.add_node(state)
+            fsm.addNode(state)
         for state, transitions in self.transitions.items():
             for condition, next_state in transitions:
                 if condition is None:
