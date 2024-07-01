@@ -53,6 +53,7 @@ simple_port_head: variable_name
             | parameter_assignment // This includes parameters and localparams
             | variable_assignment ";" // This includes assign
             | system_task
+            | dollar_indentifier ";" // Special cases like $finish
             | module_instantiation // This includes module instantiation
             | define_parameter // This includes defparam
 
@@ -115,6 +116,7 @@ statement: variable_assignment ";"
             | conditional_statement
             | case_statement
             | system_task
+            | dollar_indentifier ";"
 
 // 3.1 Conditional Statements
 // The "if" statement is used to execute a block of code if a condition is true. If the condition is false, another block of code can be executed with the "else" statement.
@@ -152,7 +154,8 @@ task_arguments: expression ("," expression)*
 dollar_indentifier: "$" /[a-zA-Z_][a-zA-Z0-9_]*/
 
 // 5.1 Function calls
-function_call: dollar_indentifier "(" expression ")"
+function_call: dollar_indentifier function_parameters?
+function_parameters: "(" expression ")"
 
 // 6. Signals
 
@@ -189,7 +192,6 @@ expression: macro_usage
             | repeated_concatenation // Repeated concatenation is treated as an expression
             | array_indexing // Array indexing is treated as an expression
             | array_slicing // Array slicing is treated as an expression
-            | system_task // System tasks are treated as expressions
             | function_call // Function calls are treated as expressions
             | based_number
 

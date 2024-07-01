@@ -42,6 +42,14 @@ class ExpressionTransformer(Transformer):
     def dollar_indentifier(self, items):
         return str(items[0])
 
+    def array_slicing(self, items):
+        arrayNode = createVariableNode(items[0])
+        return createArraySlicingNode(arrayNode, items[1], items[2])
+    
+    def array_indexing(self, items):
+        arrayNode = createVariableNode(items[0])
+        return createArrayIndexingNode(arrayNode, items[1])
+
     def expression(self, items):
         # we transform the expression to a pygraphviz graph
         if len(items) == 3:

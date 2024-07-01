@@ -11,6 +11,7 @@ Last Modified time: 2024-06-28 12:55:05
 from .binary import *
 from .unary import *
 from .special import *
+from .array import *
 
 import pygraphviz as pgv
 
@@ -71,6 +72,18 @@ def createAssignNode(assignFrom: DFGNode, assignTo: str):
     node.children = [assignFrom]
     return node
 
+def createArraySlicingNode(arrayName: DFGNode, indexFrom: DFGNode, indexTo: DFGNode):
+    node = DFGNode(AOPType.SLICE.value)
+    node.operation = AOPType.SLICE
+    node.children = [arrayName, indexFrom, indexTo]
+    return node
+
+def createArrayIndexingNode(arrayName: DFGNode, index: DFGNode):
+    node = DFGNode(AOPType.INDEX.value)
+    node.operation = AOPType.INDEX
+    node.children = [arrayName, index]
+    return node
+
 class DFGraph:
     def __init__(self) -> None:
         self.nodes = []
@@ -122,6 +135,7 @@ class DFGraph:
         else:
             self.__node_trav_index += 1
             node_name: str = f"{str(node.variable_name)}_{self.__node_trav_index}"
+        print(f"Node: {node}, children: {node.children}")
         graph.add_node(node_name, label=node.variable_name)
         for child in node.children:
             childName = self.toGraphRec(child, graph, visited)
