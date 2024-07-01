@@ -29,19 +29,22 @@ class DFGNode:
 
     def isVariable(self):
         return self.operation == SOPType.VARIABLE
-    
+
     def isConstant(self):
         return self.operation == SOPType.CONST
+
 
 def createVariableNode(variable_name: str):
     node = DFGNode(variable_name)
     node.operation = SOPType.VARIABLE
     return node
 
+
 def createConstantNode(value: int):
     node = DFGNode(str(value))
     node.operation = SOPType.CONST
     return node
+
 
 def createBinaryOpNode(op: BOPType | str, left: DFGNode, right: DFGNode):
     if isinstance(op, str):
@@ -51,6 +54,7 @@ def createBinaryOpNode(op: BOPType | str, left: DFGNode, right: DFGNode):
     node.children = [left, right]
     return node
 
+
 def createUnaryOpNode(op: UOPType | str, child: DFGNode):
     if isinstance(op, str):
         op = UOPType.fromString(op)
@@ -58,6 +62,7 @@ def createUnaryOpNode(op: UOPType | str, child: DFGNode):
     node.operation = op
     node.children = [child]
     return node
+
 
 def createConcatOpNode(children: list):
     node = DFGNode("\{\}")
@@ -74,6 +79,7 @@ def createFuncCallNode(func_name: str, children: list):
     node.children = children
     return node
 
+
 def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode):
     newNodes = []
     if isinstance(assignTo, str):
@@ -84,18 +90,19 @@ def createAssignNodes(assignFrom: DFGNode, assignTo: str | DFGNode):
         for child in assignTo.children:
             assert child.isVariable() or child.isConstant(), f"child = {child}"
             assert child.children == [], f"child = {child}"
-            
+
             # we need to create a new node
             newNode = DFGNode(child.variable_name)
             newNode.operation = SOPType.ASSIGN
             newNode.children = [node]
             newNodes.append(newNode)
-    
+
     node.operation = SOPType.ASSIGN
     node.children = [assignFrom]
     newNodes.append(node)
-    
+
     return newNodes
+
 
 def createArraySlicingNode(arrayName: DFGNode, indexFrom: DFGNode, indexTo: DFGNode):
     node = DFGNode(AOPType.SLICE.value)
@@ -103,11 +110,13 @@ def createArraySlicingNode(arrayName: DFGNode, indexFrom: DFGNode, indexTo: DFGN
     node.children = [arrayName, indexFrom, indexTo]
     return node
 
+
 def createArrayIndexingNode(arrayName: DFGNode, index: DFGNode):
     node = DFGNode(AOPType.INDEX.value)
     node.operation = AOPType.INDEX
     node.children = [arrayName, index]
     return node
+
 
 class DFGraph:
     def __init__(self) -> None:
@@ -146,7 +155,7 @@ class DFGraph:
                 self.__variable_fanouts[variable] = set()
             if parentNode is not None:
                 self.__variable_fanouts[variable].add(node)
-            
+
         for child in node.children:
             self.addNode(child, parentNode=node)
         self.nodes.append(node)

@@ -80,7 +80,7 @@ def printVerilogAST(filename: str, textFile: str = None, systemVerilog: bool = T
 
     transform = SystemVerilogTransformer() if systemVerilog else VerilogTransformer()
     parseTree = transform.transform(parseTree)
-    
+
     astText = parseTree.pretty() if isinstance(parseTree, str) else str(parseTree)
 
     if textFile is not None:

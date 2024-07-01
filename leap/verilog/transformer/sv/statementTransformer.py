@@ -17,6 +17,7 @@ from ...modules import *
 
 from enum import Enum, auto
 
+
 class StatementTransformer(Transformer):
     def single_statement(self, items):
         if isinstance(items[0], list):
@@ -64,7 +65,7 @@ class StatementTransformer(Transformer):
             else:
                 statements.append(statement)
         return statements
-    
+
     def else_if_statements(self, items):
         statements = []
         for statement in items[1]:
@@ -76,7 +77,7 @@ class StatementTransformer(Transformer):
             else:
                 statements.append(statement)
         return statements
-    
+
     def else_statement(self, items):
         statements = []
         for statement in items[0]:

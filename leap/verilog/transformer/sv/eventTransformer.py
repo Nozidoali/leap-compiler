@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- encoding=utf8 -*-
 
-'''
+"""
 Author: Hanyu Wang
 Created time: 2024-07-01 13:24:16
 Last Modified by: Hanyu Wang
 Last Modified time: 2024-07-01 18:45:52
-'''
+"""
 
 import logging
 
@@ -17,7 +17,7 @@ from ...modules import *
 
 
 class EventTransformer(Transformer):
-    
+
     def always_block(self, items):
         event_condition: Tree = items[0]
         statements = items[1]

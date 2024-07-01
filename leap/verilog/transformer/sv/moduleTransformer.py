@@ -59,7 +59,9 @@ class ModuleTransformer(Transformer):
 
     @v_args(inline=True)
     def variable_assignment(self, signal, expression):
-        assert isinstance(signal, str) or isinstance(signal, DFGNode), f"signal = {signal}"
+        assert isinstance(signal, str) or isinstance(
+            signal, DFGNode
+        ), f"signal = {signal}"
         assert isinstance(expression, DFGNode), f"expression = {expression}"
         return "variable_assignment", Assignment(signal, expression)
 
