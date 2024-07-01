@@ -5,7 +5,7 @@
 Author: Hanyu Wang
 Created time: 2024-07-01 13:24:16
 Last Modified by: Hanyu Wang
-Last Modified time: 2024-07-01 14:00:53
+Last Modified time: 2024-07-01 17:21:51
 '''
 
 import logging
@@ -25,6 +25,7 @@ class EventTransformer(Transformer):
             logger.debug(f"combinational_event = {statements}")
             return statements
         if event_condition.data == "sequential_event":
+            print(statements)
             logger.debug(f"sequential_event = {statements}")
             return statements
-        return items
+        raise NotImplementedError

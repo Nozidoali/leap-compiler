@@ -122,7 +122,7 @@ class DFGraph:
         graph.add_node(node_name, label=node.variable_name)
         for child in node.children:
             childName = self.toGraphRec(child, graph)
-            graph.add_edge(node_name, childName)
+            graph.add_edge(childName, node_name)
         return node_name
 
     def toGraph(self) -> pgv.AGraph:

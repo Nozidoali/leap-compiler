@@ -62,7 +62,7 @@ class ModuleTransformer(Transformer):
     def variable_assignment(self, signal, expression):
         assert isinstance(signal, str)
         assert isinstance(expression, DFGNode)
-        return "variable_assignment", signal, expression
+        return "variable_assignment", Assignment(signal, expression)
 
     def system_task(self, items):
         return "system_task", []

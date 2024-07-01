@@ -27,22 +27,40 @@ class StatementTransformer(Transformer):
         return [items[0]]
 
     def statement_block(self, items):
-        return items
+        all_items = []
+        for item in items:
+            if isinstance(item, list):
+                all_items.extend(item)
+            else:
+                all_items.append(item)
+        return all_items
 
+    # statement: variable_assignment ";"
+    #             | conditional_statement
+    #             | case_statement
+    #             | system_task
     def statement(self, items):
+        if isinstance(items[0], list):
+            return items[0]
         return [items[0]]
 
     # conditional_statement: if_statement else_if_statements? else_statement?
     def conditional_statement(self, items):
-        for item in items:
-            ctype, condition, statements = item
-        return items
+        # we need to flatten the list
+        all_items = []
+        for branches in items:
+            for statement in branches:
+                if isinstance(statement, list):
+                    all_items.extend(statement)
+                else:
+                    all_items.append(statement)
+        return all_items
 
     def if_statement(self, items):
-        return ConditionalType.IF, items[0], items[1]
+        return items[1]
     
     def else_if_statements(self, items):
-        return ConditionalType.ELSE_IF, items[0], items[1]
+        return items[1]
     
     def else_statement(self, items):
-        return ConditionalType.ELSE, None, items[0]
+        return items[0]
