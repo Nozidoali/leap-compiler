@@ -55,9 +55,6 @@ class ModuleTransformer(Transformer):
         """
         return Parameter(range=range, name=lvalue, value=expression)
 
-    def always_block(self, items):
-        return "always_block", []
-
     def parameter_assignments(self, items):
         return "parameter_assignment", []
 

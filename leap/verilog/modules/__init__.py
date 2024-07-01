@@ -15,3 +15,5 @@ from .netlist import *
 from .declaration import *
 from .expression import *
 from .fsm import *
+from .assignment import *
+from .events import *

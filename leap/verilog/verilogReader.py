@@ -78,12 +78,14 @@ def printVerilogAST(filename: str, textFile: str = None, systemVerilog: bool = T
     parser = Lark(grammer, parser="lalr", lexer="contextual")
     parseTree = parser.parse(open(filename).read())
 
-    # transform = SystemVerilogTransformer() if systemVerilog else VerilogTransformer()
-    # parseTree = transform.transform(parseTree)
+    transform = SystemVerilogTransformer() if systemVerilog else VerilogTransformer()
+    parseTree = transform.transform(parseTree)
+    
+    astText = parseTree.pretty() if isinstance(parseTree, str) else str(parseTree)
 
     if textFile is not None:
         with open(textFile, "w") as f:
-            f.write(str(parseTree.pretty()))
+            f.write(astText)
     else:
-        print(parseTree.pretty())
+        print(astText)
     # pydot__tree_to_png(parseTree, pngFile)

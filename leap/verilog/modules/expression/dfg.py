@@ -66,17 +66,23 @@ def createFuncCallNode(func_name: str, children: list):
 class DFGraph:
     def __init__(self) -> None:
         self.nodes = []
+        self.__node_trav_index = 0
 
     def add_node(self, node: DFGNode):
+        assert isinstance(node, DFGNode)
         self.nodes.append(node)
 
     def toGraphRec(self, node: DFGNode, graph: pgv.AGraph):
-        graph.add_node(node.variable_name)
+        self.__node_trav_index += 1
+        curr_id: int = self.__node_trav_index
+        graph.add_node(self.__node_trav_index, label=node.variable_name)
         for child in node.children:
-            graph.add_edge(node.variable_name, child.variable_name)
-            self.toGraphRec(child, graph)
+            child_id = self.toGraphRec(child, graph)
+            graph.add_edge(curr_id, child_id)
+        return self.__node_trav_index
 
     def toGraph(self) -> pgv.AGraph:
+        self.__node_trav_index = 0
         graph = pgv.AGraph(directed=True)
         for node in self.nodes:
             self.toGraphRec(node, graph)

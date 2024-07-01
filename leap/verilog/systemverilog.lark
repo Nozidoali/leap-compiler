@@ -79,11 +79,11 @@ port_direction: "input" -> input | "output" -> output | "inout" -> inout
 // 2.3 Variable Declarations and Assignments
 // the block statement is a statement block or a single statement
 always_block: "always" "@" "(" event_expression ")" single_or_block_statement
-event_expression: "posedge" CNAME
-                | "negedge" CNAME
+event_expression: "posedge" CNAME -> sequential_event
+                | "negedge" CNAME -> sequential_event
                 | macro_usage
-                | CNAME
-                | "*"
+                | variable_name
+                | "*" -> combinational_event
                 | event_expression event_operator event_expression
 
 event_operator: "or" | "and"
@@ -128,7 +128,7 @@ else_statement: "else" single_or_block_statement
 // (1) statement_block: "begin" statement+ "end"
 // (2) single_statement: statement
 ?single_or_block_statement: statement_block | single_statement
-statement_block: "begin" statement+ "end"
+?statement_block: "begin" statement+ "end"
 single_statement: statement
 
 

@@ -24,6 +24,7 @@ class SystemVerilogTransformer(
     PortTransformer,
     ExpressionTransformer,
     FSMTransformer,
+    EventTransformer,
 ):
     def start(self, items):
         if isinstance(items[0], list):
