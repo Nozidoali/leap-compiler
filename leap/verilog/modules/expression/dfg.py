@@ -81,15 +81,17 @@ class DFGraph:
         return None
 
     def insertNode(self, node: DFGNode):
-        variableName = self.getVariableName(node)
-        if variableName is not None and variableName in self.__variable_to_node_index:
-            index = self.__variable_to_node_index[variableName]
-            return index
         # topological sort
         children = []
         for child in node.children:
             index = self.insertNode(child)
             children.append(index)
+        variableName = self.getVariableName(node)
+        if variableName is not None and variableName in self.__variable_to_node_index:
+            index = self.__variable_to_node_index[variableName]
+            # we expend the children
+            self.__nodes[index].children.extend(children)
+            return index
         nodesWithSameOp = self.__operation_to_nodes_index[node.operation.value]
         for index in nodesWithSameOp:
             if self.__nodes[index].children == children:
@@ -108,9 +110,6 @@ class DFGraph:
         assert rootIndex == len(self.__nodes) - 1
         return rootIndex
 
-    def addNode(self, node: DFGNode, parentNode: DFGNode = None):
-        self.insertNode(node)
-        return
 
     def toGraphRec(self, node: DFGNode, graph: pgv.AGraph, visited: set) -> str:
         if node.variable_name in self.__variable_definitions:

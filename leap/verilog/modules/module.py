@@ -103,6 +103,7 @@ class Module:
                     case ModuleBodyType.VARIABLE_ASSIGNMENT:
                         logger.debug(f"Variable Assignment: {statement}")
                         assignment = statement[1]
+                        print(assignment)
 
                         newNodes = createAssignNodes(
                             assignment.expression,
@@ -110,7 +111,7 @@ class Module:
                             assignment.condition,
                         )
                         for node in newNodes:
-                            self.dfg.addNode(node)
+                            self.dfg.insertNode(node)
 
                     case _:
                         pass
