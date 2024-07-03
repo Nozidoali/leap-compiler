@@ -110,24 +110,6 @@ class DFGraph:
         assert rootIndex == len(self.__nodes) - 1
         return rootIndex
 
-
-    def toGraphRec(self, node: DFGNode, graph: pgv.AGraph, visited: set) -> str:
-        if node.variable_name in self.__variable_definitions:
-            node_name: str = node.variable_name
-            if node_name in visited:
-                return node_name
-            # print(f"Node: {node}, children: {node.children}")
-            visited.add(node_name)
-        else:
-            self.__node_trav_index += 1
-            node_name: str = f"{str(node.variable_name)}_{self.__node_trav_index}"
-        logger.debug(f"Node: {node}, children: {node.children}")
-        graph.add_node(node_name, label=node.variable_name)
-        for child in node.children:
-            childName = self.toGraphRec(child, graph, visited)
-            graph.add_edge(childName, node_name)
-        return node_name
-
     def toGraph(self) -> pgv.AGraph:
         graph = pgv.AGraph(directed=True)
         for i, node in enumerate(self.__nodes):
