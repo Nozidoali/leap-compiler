@@ -92,10 +92,12 @@ class DFGraph:
             # we expend the children
             self.__nodes[index].children.extend(children)
             return index
-        nodesWithSameOp = self.__operation_to_nodes_index[node.operation.value]
-        for index in nodesWithSameOp:
-            if self.__nodes[index].children == children:
-                return index
+        elif variableName is None:
+            # only hash non-trivial nodes
+            nodesWithSameOp = self.__operation_to_nodes_index[node.operation.value]
+            for index in nodesWithSameOp:
+                if self.__nodes[index].children == children:
+                    return index
         rootIndex = self.createNewNode()
         if variableName is not None:
             self.__variable_to_node_index[variableName] = rootIndex
