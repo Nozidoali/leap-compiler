@@ -22,7 +22,7 @@ def run(args):
     netlist: Netlist = readVerilog(args.input)
     module: Module = netlist.getModule("toy")
     dfg: DFGraph = module.dfg
-    dfg.toGraph().write(args.output)
+    dfg.toGraph(args.output)
 
 
 if __name__ == "__main__":

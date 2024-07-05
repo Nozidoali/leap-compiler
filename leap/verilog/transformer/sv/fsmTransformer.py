@@ -15,9 +15,6 @@ logger = logging.getLogger(__name__)
 from lark import Transformer, v_args, Tree
 from ...modules import *
 
-import pygraphviz as pgv
-
-
 class FSMTransformer(Transformer):
 
     def case_statement(self, items):

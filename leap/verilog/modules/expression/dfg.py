@@ -13,9 +13,6 @@ from .unary import *
 from .special import *
 from .array import *
 
-import pygraphviz as pgv
-
-
 class DFGNode:
     # Expressions are hard to handle because of the recursive nature
 
@@ -112,11 +109,49 @@ class DFGraph:
         assert rootIndex == len(self.__nodes) - 1
         return rootIndex
 
-    def toGraph(self) -> pgv.AGraph:
-        graph = pgv.AGraph(directed=True)
-        for i, node in enumerate(self.__nodes):
-            graph.add_node(i, label=node.label)
-            for child in node.children:
-                graph.add_edge(child, i)
-        return graph
-
+    def toGraph(self, dotFile: str):
+        try:
+            import pygraphviz as pgv
+            graph = pgv.AGraph(directed=True)
+            for i, node in enumerate(self.__nodes):
+                graph.add_node(i, label=node.label)
+                for child in node.children:
+                    graph.add_edge(child, i)
+            graph.write(dotFile)
+        except ImportError or ModuleNotFoundError as e:
+            # if pygraphviz is not installed, use pydot
+            import pydot
+            graph = pydot.Dot(graph_type="digraph")
+            
+            # add subgraph
+            subgraphFSM = pydot.Cluster("FSM")
+            subgraphOther = pydot.Cluster("Other")
+            # add nodes
+            for i, node in enumerate(self.__nodes):
+                if node.label == "cur_state" or node.label == "next_state":
+                    subgraphFSM.add_node(pydot.Node(i, label=node.label, style="filled", fillcolor="lightblue"))
+                elif node.label == "=":
+                    # bypass assign
+                    assert len(node.children) == 1
+                    newChild = node.children[0]
+                    # print(f"bypassing {i} to {newChild}")
+                    continue
+                else:
+                    subgraphOther.add_node(pydot.Node(i, label=node.label))
+                for child in node.children:
+                    # if the child is an assign, we bypass it
+                    if self.__nodes[child].label == "cur_state" or self.__nodes[child].label == "next_state":
+                        graph.add_edge(pydot.Edge(child, i, color="lightblue"))
+                    elif self.__nodes[child].label == "=":
+                        assert len(self.__nodes[child].children) == 1
+                        newChild = self.__nodes[child].children[0]
+                        # print(f"bypassing {child} to {newChild}")
+                        graph.add_edge(pydot.Edge(newChild, i))
+                    else:
+                        graph.add_edge(pydot.Edge(child, i))
+            
+            graph.add_subgraph(subgraphFSM)
+            graph.add_subgraph(subgraphOther)
+            
+            graph.write(dotFile, format="dot")
+            
