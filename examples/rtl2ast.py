@@ -19,8 +19,9 @@ parser.add_argument("-o", "--output", type=str, help="output file")
 
 @run_with_logger("rtl2ast.log")
 def run(args):
+    moduleName = args.input.split("/")[-1].split(".")[0]
     netlist: Netlist = readVerilog(args.input)
-    module: Module = netlist.getModule("toy")
+    module: Module = netlist.getModule(moduleName)
     dfg: DFGraph = module.dfg
     dfg.toGraph(args.output)
 

@@ -58,12 +58,15 @@ class StatementTransformer(Transformer):
         statements = []
         for statement in items[1]:
             logger.debug(f"statement = {statement}")
-            sType, assign = statement
-            if sType == "variable_assignment":
-                assign.setCondition(items[0])
-                statements.append((sType, assign))
-            else:
-                statements.append(statement)
+            try:
+                sType, assign = statement
+                if sType == "variable_assignment":
+                    assign.setCondition(items[0])
+                    statements.append((sType, assign))
+                else:
+                    statements.append(statement)
+            except ValueError:
+                logger.error(f"statement = {statement}")
         return statements
 
     def else_if_statements(self, items):
