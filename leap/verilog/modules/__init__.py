@@ -17,3 +17,6 @@ from .expression import *
 from .fsm import *
 from .assignment import *
 from .events import *
+from .timeUnit import *
+from .moduleParameters import *
+from .moduleInst import *

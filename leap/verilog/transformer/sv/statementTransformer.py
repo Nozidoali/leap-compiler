@@ -38,6 +38,7 @@ class StatementTransformer(Transformer):
     #             | case_statement
     #             | system_task
     def statement(self, items):
+        # we make sure that the return value is a list
         if isinstance(items[0], list):
             return items[0]
         return [items[0]]

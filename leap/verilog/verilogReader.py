@@ -62,6 +62,24 @@ def readVerilog(filename: str) -> Netlist:
     return parse_verilog(data)
 
 
+def parseVerilog(filename: str, systemVerilog: bool = True):
+    import os
+
+    grammer = None
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    grammar_file = (
+        os.path.join(curr_dir, "systemverilog.lark")
+        if systemVerilog
+        else os.path.join(curr_dir, "verilog.lark")
+    )
+    with open(grammar_file, "r") as f:
+        grammer = f.read()
+    parser = Lark(grammer, parser="lalr", lexer="contextual")
+    parseTree = parser.parse(open(filename).read())
+
+    return parseTree
+
+
 def printVerilogAST(filename: str, textFile: str = None, systemVerilog: bool = True):
     import os
     from lark.tree import pydot__tree_to_png

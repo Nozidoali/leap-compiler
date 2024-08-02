@@ -16,6 +16,7 @@ class SOPType(Enum):
     CONCAT = "\{\}"
     FUNCTION = "$"
     ASSIGN = "="
+    WIRE_NB = "<="
     WIRE = "-"
     CONST = "const"
     CONDITIONAL_ASSIGN = "?="

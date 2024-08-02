@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 from .declaration import *
 from .expression import *
+from .assignment import *
+from .moduleInst import *
+from .moduleParameters import *
 
 from enum import Enum
 
@@ -55,6 +58,8 @@ class ModuleBodyType(Enum):
         elif label == "define_parameter":
             return ModuleBodyType.DEFINE_PARAMETER
         else:
+            assert False, f"Unsupported module body type: {label}"
+            raise NotImplementedError
             return None
 
 
@@ -72,12 +77,35 @@ class Module:
         )
 
         self.module_name = module_name
-        self.param_list = param_list
+
+        # TODO: support parameter list
+        self.param_list = {}
         self.port_list = {}
         for port in port_list:
             self.port_list[port.getPortName()] = port
         self.attribute_instances = attribute_instances
 
+        self.dfg = None
+        self.internal_signals = {}
+        self.node_is_blocking = {}
+
+        self.submodules = {}
+        self.loadDFG(module_items)
+
+    def __repr__(self):
+        return self.module_name
+
+    def getVariableType(self, variableName: str):
+        if variableName in self.internal_signals:
+            return self.internal_signals[variableName].getType()
+        if variableName in self.port_list:
+            return self.port_list[variableName].getType()
+
+    def getDFG(self):
+        return self.dfg
+
+    def loadDFG(self, module_items: list):
+        # load the DFG
         self.dfg = DFGraph()
 
         self.internal_signals = {}
@@ -86,8 +114,14 @@ class Module:
             if isinstance(item, tuple):
                 statements = [item]
             if isinstance(item, list):
-                statements = item
+                statements = []
+                for subItem in item:
+                    if isinstance(subItem, tuple):
+                        statements.append(subItem)
+                    else:
+                        statements.extend(subItem)
             for statement in statements:
+                assert isinstance(statement, tuple), f"statement = {statement}"
                 bodyType = ModuleBodyType.fromString(statement[0])
                 match bodyType:
                     case ModuleBodyType.PORT_DECLARATION:
@@ -103,7 +137,12 @@ class Module:
                     case ModuleBodyType.VARIABLE_ASSIGNMENT:
                         logger.debug(f"Variable Assignment: {statement}")
                         assignment = statement[1]
-                        print(assignment)
+                        # print(assignment)
+
+                        lhs: DFGNode = assignment.target
+                        rhs: DFGNode = assignment.expression
+                        # assert rhs.isVariable(), f"rhs = {rhs}"
+                        # assert lhs.isVariable(), f"lhs = {lhs}"
 
                         newNodes = createAssignNodes(
                             assignment.expression,
@@ -111,10 +150,67 @@ class Module:
                             assignment.condition,
                         )
                         for node in newNodes:
-                            self.dfg.insertNode(node)
+                            nodeIndex = self.dfg.insertNode(node)
+                            dfgNode = self.getNodeAtIndex(nodeIndex)
+                            if dfgNode.isVariable:
+                                # print(
+                                #     f"Node: {nodeIndex}, label: {dfgNode.label}, isBlocking: {assignment.isBlocking}"
+                                # )
+                                self.node_is_blocking[
+                                    dfgNode.label
+                                ] = assignment.isBlocking
 
-                    case _:
+                    case ModuleBodyType.PARAMETER_ASSIGNMENT:
+                        logger.debug(f"Parameter Assignment: {statement}")
+                        parameter = statement[1]
+                        self.param_list[parameter.getName()] = parameter
+
+                    case ModuleBodyType.MODULE_INSTANTIATION:
+                        moduleInst = statement[1]
+                        assert isinstance(
+                            moduleInst, ModuleInst
+                        ), f"moduleInst = {moduleInst}"
+                        self.submodules[moduleInst.getInstName()] = moduleInst
+
+                    case ModuleBodyType.DEFINE_PARAMETER:
+                        moduleParameter: ModuleParameters = statement[1]
+
+                        moduleInstName = moduleParameter.getInstName()
+                        assert (
+                            moduleInstName in self.submodules
+                        ), f"moduleInstName = {moduleInstName}, available = {self.submodules.keys()}"
+
+                        moduleInst = self.submodules[moduleInstName]
+
+                        parameters: dict = moduleParameter.getParameters()
+
+                        for key, value in parameters.items():
+                            moduleInst.addParameter(key, value)
+
+                    case ModuleBodyType.SYSTEM_TASK:
+                        logger.debug(f"System Task: {statement}")
                         pass
 
-    def __repr__(self):
+                    case _:
+                        assert False, f"Unsupported module body type: {bodyType}"
+                        raise NotImplementedError
+
+    def getPort(self, portName: str):
+        if portName in self.port_list:
+            return self.port_list[portName]
+        return None
+
+    def getPortList(self):
+        return list(self.port_list.keys())
+
+    def getName(self):
         return self.module_name
+
+    def getParameters(self):
+        return self.param_list
+
+    def getSignalList(self):
+        return list(self.internal_signals.keys())
+
+    def getNodeAtIndex(self, index: int):
+        return self.dfg.getNode(index)

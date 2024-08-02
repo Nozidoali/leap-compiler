@@ -24,7 +24,7 @@ class ExpressionTransformer(Transformer):
         return createConstantNode(items[0])
 
     def macro_usage(self, items):
-        return DFGNode(items[0])
+        return createMacroNode(items[0])
 
     def concatenation(self, items):
         return createConcatOpNode(items)
@@ -46,12 +46,10 @@ class ExpressionTransformer(Transformer):
         return str(items[0])
 
     def array_slicing(self, items):
-        arrayNode = createVariableNode(items[0])
-        return createArraySlicingNode(arrayNode, items[1], items[2])
+        return createArraySlicingNode(items[0], items[1], items[2])
 
     def array_indexing(self, items):
-        arrayNode = createVariableNode(items[0])
-        return createArrayIndexingNode(arrayNode, items[1])
+        return createArrayIndexingNode(items[0], items[1])
 
     def expression(self, items):
         # we transform the expression to a pygraphviz graph

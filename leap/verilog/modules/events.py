@@ -10,6 +10,5 @@ Last Modified time: 2024-07-01 13:21:41
 
 
 class Events:
-
     def __init__(self) -> None:
         self.events = []

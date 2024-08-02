@@ -17,7 +17,6 @@ from ...modules import *
 
 
 class EventTransformer(Transformer):
-
     def always_block(self, items):
         event_condition: Tree = items[0]
         statements = items[1]

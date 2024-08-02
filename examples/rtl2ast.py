@@ -8,7 +8,7 @@ Last Modified by: Hanyu Wang
 Last Modified time: 2024-07-01 22:31:39
 """
 
-from leap import run_with_logger, Netlist, readVerilog, Module, DFGraph
+from leap import run_with_logger, Netlist, readVerilog, Module, DFGraph, writeVerilog
 
 import argparse
 
@@ -23,7 +23,7 @@ def run(args):
     netlist: Netlist = readVerilog(args.input)
     module: Module = netlist.getModule(moduleName)
     dfg: DFGraph = module.dfg
-    dfg.toGraph(args.output)
+    writeVerilog(netlist, args.output)
 
 
 if __name__ == "__main__":

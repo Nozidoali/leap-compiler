@@ -10,7 +10,6 @@ Last Modified time: 2024-06-28 14:59:39
 
 
 class FSM:
-
     def __init__(self) -> None:
         self.states = []
         self.transitions = {}

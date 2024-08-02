@@ -13,35 +13,37 @@ from .unary import *
 from .special import *
 from .array import *
 
-class DFGNode:
-    # Expressions are hard to handle because of the recursive nature
-
-    def __init__(self, variable_name: str = None) -> None:
-        self.variable_name = variable_name
-        self.operation = None
-        self.children = []
-
-    def __repr__(self) -> str:
-        return self.variable_name
-
-    def isVariable(self):
-        return self.operation == SOPType.VARIABLE
-
-    def isConstant(self):
-        return self.operation == SOPType.CONST
+from .dfgNode import *
+from .createNode import *
 
 
 class DFGraph:
     class Node:
         def __init__(self, node: int) -> None:
             self.node = node
-            self.data = None
-            self.label = None
+            self.op = None
+            self.range = None
+            self.label: str = None
             self.children = []
             self.parents = []
 
         def __repr__(self) -> str:
             return f"{self.node.variable_name} -> {self.children}"
+
+        def getVariableName(self):
+            if self.op == SOPType.VARIABLE:
+                return self.label
+            if self.op == SOPType.CONST:
+                return self.label
+            return None
+
+        @property
+        def isVariable(self):
+            return self.op == SOPType.VARIABLE
+
+        @property
+        def hasChildren(self):
+            return len(self.children) > 0
 
     def __init__(self) -> None:
         self.nodes = []
@@ -69,15 +71,11 @@ class DFGraph:
     def getVariableName(node: DFGNode):
         if node.operation == SOPType.VARIABLE:
             return node.variable_name
-        if node.operation == SOPType.CONDITIONAL_ASSIGN:
-            return node.variable_name
-        if node.operation == SOPType.ASSIGN:
-            return node.variable_name
         if node.operation == SOPType.CONST:
             return node.variable_name
         return None
 
-    def insertNode(self, node: DFGNode):
+    def insertNode(self, node: DFGNode) -> int:
         # topological sort
         children = []
         for child in node.children:
@@ -99,48 +97,126 @@ class DFGraph:
         if variableName is not None:
             self.__variable_to_node_index[variableName] = rootIndex
         self.__operation_to_nodes_index[node.operation.value].append(rootIndex)
+
+        # sanity check
+        assert isinstance(
+            node.variable_name, str
+        ), f"node = {node}, node type = {type(node)}"
+
+        node: DFGNode
         newNode = self.Node(node)
         newNode.children = children
-        newNode.data = node.variable_name
+        newNode.op = node.operation
         newNode.label = node.variable_name
+        newNode.range = node.range
+
         for child in children:
             self.__nodes[child].parents.append(rootIndex)
         self.__nodes.append(newNode)
         assert rootIndex == len(self.__nodes) - 1
         return rootIndex
 
+    def extractNodeHelper(self, nodeIdx: int) -> DFGNode:
+        node = self.__nodes[nodeIdx]
+        if node.op == SOPType.VARIABLE:
+            # we need to set the range
+            dfgNode = createVariableNode(node.label)
+            if node.range is not None:
+                dfgNode.setRange(node.range)
+            return dfgNode
+        if node.op == SOPType.CONST:
+            return createConstantNode(node.label)
+        if isinstance(node.op, BOPType):
+            assert len(node.children) == 2
+            left = self.extractNodeHelper(node.children[0])
+            right = self.extractNodeHelper(node.children[1])
+            return createBinaryOpNode(node.op, left, right)
+        if isinstance(node.op, UOPType):
+            assert len(node.children) == 1
+            child = self.extractNodeHelper(node.children[0])
+            return createUnaryOpNode(node.op, child)
+        if isinstance(node.op, SOPType):
+            if node.op == SOPType.WIRE:
+                # we don't need to do anything
+                assert len(node.children) == 1
+                return self.extractNodeHelper(node.children[0])
+            if node.op == SOPType.CONDITIONAL_ASSIGN:
+                cond = self.extractNodeHelper(node.children[0])
+                branches = [
+                    self.extractNodeHelper(child) for child in node.children[1:]
+                ]
+                return createMuxNode(node.label, cond, branches)
+            if node.op == SOPType.CONCAT:
+                children = [self.extractNodeHelper(child) for child in node.children]
+                return createConcatOpNode(children)
+            if node.op == SOPType.FUNCTION:
+                children = [self.extractNodeHelper(child) for child in node.children]
+                return createFuncCallNode(node.label, children)
+        if isinstance(node.op, AOPType):
+            # this should not happen in the new definition
+            # TODO: remove this
+            raise NotImplementedError
+            if node.op == AOPType.INDEX:
+                assert len(node.children) == 2
+                array = self.extractNodeHelper(node.children[0])
+                index = self.extractNodeHelper(node.children[1])
+                return createArrayIndexingNode(array, index)
+            if node.op == AOPType.SLICE:
+                assert len(node.children) == 3
+                array = self.extractNodeHelper(node.children[0])
+                start = self.extractNodeHelper(node.children[1])
+                end = self.extractNodeHelper(node.children[2])
+                return createArraySlicingNode(array, start, end)
+        print(f"node = {node}, node.op = {node.op}")
+        raise NotImplementedError
+
+    def extractNode(self, variableName: str):
+        assert isinstance(variableName, str), f"variableName = {variableName}"
+        assert (
+            variableName in self.__variable_to_node_index
+        ), f"variableName = {variableName} not found"
+        nodeIdx = self.__variable_to_node_index[variableName]
+        return self.extractNodeHelper(nodeIdx)
+
+    def getNodes(self):
+        return self.__nodes
+
+    def getNode(self, index: int):
+        return self.__nodes[index]
+
     def toGraph(self, dotFile: str):
         try:
+            # raise ImportError
             import pygraphviz as pgv
+
             graph = pgv.AGraph(directed=True)
             for i, node in enumerate(self.__nodes):
                 graph.add_node(i, label=node.label)
-                for child in node.children:
-                    graph.add_edge(child, i)
+                if node.op == SOPType.CONDITIONAL_ASSIGN:
+                    graph.add_edge(node.children[0], i, style="dashed")
+                    for child in node.children[1:]:
+                        graph.add_edge(child, i)
+                else:
+                    for child in node.children:
+                        graph.add_edge(child, i)
             graph.write(dotFile)
         except ImportError or ModuleNotFoundError as e:
             # if pygraphviz is not installed, use pydot
             import pydot
+
             graph = pydot.Dot(graph_type="digraph")
-            
+
             # add subgraph
             subgraphFSM = pydot.Cluster("FSM")
             subgraphOther = pydot.Cluster("Other")
             # add nodes
             for i, node in enumerate(self.__nodes):
-                if node.label == "cur_state" or node.label == "next_state":
-                    subgraphFSM.add_node(pydot.Node(i, label=node.label, style="filled", fillcolor="lightblue"))
-                elif node.label == "=":
-                    # bypass assign
-                    assert len(node.children) == 1
-                    newChild = node.children[0]
-                    # print(f"bypassing {i} to {newChild}")
-                    continue
-                else:
-                    subgraphOther.add_node(pydot.Node(i, label=node.label))
                 for child in node.children:
                     # if the child is an assign, we bypass it
-                    if self.__nodes[child].label == "cur_state" or self.__nodes[child].label == "next_state":
+                    if (
+                        self.__nodes[child].label == "cur_state"
+                        or self.__nodes[child].label == "next_state"
+                    ):
                         graph.add_edge(pydot.Edge(child, i, color="lightblue"))
                     elif self.__nodes[child].label == "=":
                         assert len(self.__nodes[child].children) == 1
@@ -149,9 +225,22 @@ class DFGraph:
                         graph.add_edge(pydot.Edge(newChild, i))
                     else:
                         graph.add_edge(pydot.Edge(child, i))
-            
+                if node.label == "cur_state" or node.label == "next_state":
+                    subgraphFSM.add_node(
+                        pydot.Node(
+                            i, label=node.label, style="filled", fillcolor="lightblue"
+                        )
+                    )
+                elif node.label == "=":
+                    # bypass assign
+                    assert len(node.children) == 1
+                    newChild = node.children[0]
+                    # print(f"bypassing {i} to {newChild}")
+                    continue
+                else:
+                    subgraphOther.add_node(pydot.Node(i, label=node.label))
+
             graph.add_subgraph(subgraphFSM)
             graph.add_subgraph(subgraphOther)
-            
+
             graph.write(dotFile, format="dot")
-            
