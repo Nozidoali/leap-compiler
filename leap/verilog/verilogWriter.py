@@ -21,6 +21,11 @@ def writeDefinitions(f, netlist: Netlist):
     f.write(
         f"`timescale {definitions['time_unit']} / {definitions['time_precision']}\n\n"
     )
+    
+    
+def writeVerilogAST(module: Module, filename: str):
+    assert isinstance(module, Module), "module should be an instance of Module"
+    module.dfg.toGraph(filename)
 
 
 def writeVerilog(netlist: Netlist, filename: str):
