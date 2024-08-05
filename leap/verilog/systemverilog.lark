@@ -28,7 +28,7 @@ macro_body: /.+/
 timescale_directive: "`timescale" time_unit "/" time_precision
 time_unit: NUMBER time_identifier
 time_precision: NUMBER time_identifier
-time_identifier: "s" | "ms" | "us" | "ns" | "ps"
+time_identifier: "s" -> s | "ms" -> ms | "us" -> us | "ns" -> ns | "ps" -> ps
 
 // 1.3 Module Declaration
 ?module: "module" module_definition ";" module_body* "endmodule"
@@ -53,6 +53,7 @@ simple_port_head: variable_name
             | parameter_assignment // This includes parameters and localparams
             | variable_assignment ";" // This includes assign
             | system_task
+            | dollar_indentifier ";" // Special cases like $finish
             | module_instantiation // This includes module instantiation
             | define_parameter // This includes defparam
 
@@ -71,7 +72,7 @@ parameter_definition: module_parameter "=" expression
 // 2.1 Parameter Declarations
 // These are merged with module instantiations
 parameter_assignment: parameter_type port_range? CNAME "=" parameter_value ";"
-parameter_value: NUMBER based_number | NUMBER
+parameter_value: expression
 
 // 2.2 Port Declarations
 port_direction: "input" -> input | "output" -> output | "inout" -> inout
@@ -79,11 +80,11 @@ port_direction: "input" -> input | "output" -> output | "inout" -> inout
 // 2.3 Variable Declarations and Assignments
 // the block statement is a statement block or a single statement
 always_block: "always" "@" "(" event_expression ")" single_or_block_statement
-event_expression: "posedge" CNAME
-                | "negedge" CNAME
+event_expression: "posedge" CNAME -> sequential_event
+                | "negedge" CNAME -> sequential_event
                 | macro_usage
-                | CNAME
-                | "*"
+                | variable_name
+                | "*" -> combinational_event
                 | event_expression event_operator event_expression
 
 event_operator: "or" | "and"
@@ -91,7 +92,9 @@ event_operator: "or" | "and"
 // 2.4 Variable Assignments
 // TODO: The challenge here is to differentiate between the non-blocking assignments and the comparison expressions
 // In Verilog, the assignment operator is "=". However, the "<=" operator is used for non-blocking assignments.
-variable_assignment: "assign"? signal ("=" | "<=") expression
+variable_assignment: "assign"? signal assignment_operator expression
+
+assignment_operator: "=" -> blocking_assignment | "<=" -> non_blocking_assignment
 
 // 2.5 Variable Declarations
 
@@ -115,6 +118,7 @@ statement: variable_assignment ";"
             | conditional_statement
             | case_statement
             | system_task
+            | dollar_indentifier ";"
 
 // 3.1 Conditional Statements
 // The "if" statement is used to execute a block of code if a condition is true. If the condition is false, another block of code can be executed with the "else" statement.
@@ -128,7 +132,7 @@ else_statement: "else" single_or_block_statement
 // (1) statement_block: "begin" statement+ "end"
 // (2) single_statement: statement
 ?single_or_block_statement: statement_block | single_statement
-statement_block: "begin" statement+ "end"
+?statement_block: "begin" statement+ "end"
 single_statement: statement
 
 
@@ -152,7 +156,8 @@ task_arguments: expression ("," expression)*
 dollar_indentifier: "$" /[a-zA-Z_][a-zA-Z0-9_]*/
 
 // 5.1 Function calls
-function_call: dollar_indentifier "(" expression ")"
+function_call: dollar_indentifier function_parameters?
+?function_parameters: "(" expression ")"
 
 // 6. Signals
 
@@ -165,7 +170,7 @@ array_slicing: CNAME "[" expression ":" expression "]" // Array slicing
         | concatenation
 
 // we need to avoid the ambiguity of the variable numbers, the variable name is CNAME, except for the keywords in variable_blacklist
-variable_name: CNAME
+variable_name: CNAME | ESCAPED_STRING
 
 variable_blacklist: signal_type | port_direction
 
@@ -189,7 +194,6 @@ expression: macro_usage
             | repeated_concatenation // Repeated concatenation is treated as an expression
             | array_indexing // Array indexing is treated as an expression
             | array_slicing // Array slicing is treated as an expression
-            | system_task // System tasks are treated as expressions
             | function_call // Function calls are treated as expressions
             | based_number
 

@@ -12,5 +12,11 @@ from enum import Enum, auto
 
 
 class SOPType(Enum):
+    VARIABLE = "#"
     CONCAT = "\{\}"
     FUNCTION = "$"
+    ASSIGN = "="
+    WIRE_NB = "<="
+    WIRE = "-"
+    CONST = "const"
+    CONDITIONAL_ASSIGN = "?="

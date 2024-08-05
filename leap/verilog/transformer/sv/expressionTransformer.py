@@ -18,19 +18,19 @@ from ...modules import *
 
 class ExpressionTransformer(Transformer):
     def extended_based_number(self, items):
-        return DFGNode(items[0])
+        return createConstantNode(items[0])
 
     def regular_number(self, items):
-        return DFGNode(items[0])
+        return createConstantNode(items[0])
 
     def macro_usage(self, items):
-        return DFGNode(items[0])
+        return createMacroNode(items[0])
 
     def concatenation(self, items):
         return createConcatOpNode(items)
 
     def repeated_concatenation(self, items):
-        return createConcatOpNode(items[1])
+        return createConcatOpNode([items[1]])
 
     def string(self, items):
         return DFGNode(items[0])
@@ -39,8 +39,17 @@ class ExpressionTransformer(Transformer):
         function_name = items[0]
         return createFuncCallNode(function_name, items[1:])
 
+    def function_parameters(self, items):
+        return items
+
     def dollar_indentifier(self, items):
         return str(items[0])
+
+    def array_slicing(self, items):
+        return createArraySlicingNode(items[0], items[1], items[2])
+
+    def array_indexing(self, items):
+        return createArrayIndexingNode(items[0], items[1])
 
     def expression(self, items):
         # we transform the expression to a pygraphviz graph
@@ -59,11 +68,11 @@ class ExpressionTransformer(Transformer):
 
         if isinstance(items[0], str):
             # this is a variable
-            return DFGNode(items[0])
+            return createVariableNode(items[0])
 
         if isinstance(items[0], DFGNode):
             return items[0]
 
-        print(f"items = {items}")
+        logger.error(f"items = {items}")
 
         return items[0]

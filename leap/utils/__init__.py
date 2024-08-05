@@ -3,11 +3,9 @@
 
 """
 Author: Hanyu Wang
-Created time: 2024-06-28 23:32:17
+Created time: 2024-06-30 12:43:53
 Last Modified by: Hanyu Wang
-Last Modified time: 2024-06-28 23:32:23
+Last Modified time: 2024-06-30 12:44:00
 """
 
-
-def testInit():
-    pass
+from .logger import *

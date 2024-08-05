@@ -13,3 +13,7 @@ from .unary import *
 from .dfg import *
 from .cfg import *
 from .special import *
+from .array import *
+
+from .createNode import *
+from .dfgNode import *

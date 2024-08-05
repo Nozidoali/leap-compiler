@@ -9,6 +9,7 @@ Last Modified time: 2024-06-25 23:58:04
 """
 
 from enum import Enum, auto
+from .expression import DFGNode, dfgNodeToString
 
 
 class PortDirection(Enum):
@@ -26,6 +27,10 @@ class PortDirection(Enum):
             return PortDirection.INOUT
         else:
             return None
+
+    @staticmethod
+    def toString(direction: "PortDirection"):
+        return direction.value.lower() if direction is not None else None
 
 
 class Port:
@@ -59,6 +64,9 @@ class Port:
             self.type = type
             return True
         return False
+
+    def getType(self):
+        return self.type
 
     def getPortName(self):
         return self.name

@@ -111,3 +111,10 @@ class PortTransformer(Transformer):
     # variable_list: CNAME ("," CNAME)*
     def variable_list(self, items):
         return [Port(name=item) for item in items]
+
+    # port_range : "[" expression ":" expression "]"
+    @v_args(inline=True)
+    def port_range(self, start, end):
+        assert isinstance(start, DFGNode)
+        assert isinstance(end, DFGNode)
+        return Range(start, end)

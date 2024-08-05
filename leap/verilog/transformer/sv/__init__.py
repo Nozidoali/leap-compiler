@@ -14,3 +14,5 @@ from .statementTransformer import *
 from .portTransformer import *
 from .expressionTransformer import *
 from .fsmTransformer import *
+from .eventTransformer import *
+from .netlistTransformer import *

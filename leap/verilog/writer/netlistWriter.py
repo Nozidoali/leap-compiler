@@ -3,11 +3,9 @@
 
 """
 Author: Hanyu Wang
-Created time: 2024-06-28 23:32:17
+Created time: 2024-07-23 22:33:34
 Last Modified by: Hanyu Wang
-Last Modified time: 2024-06-28 23:32:23
+Last Modified time: 2024-07-23 22:35:21
 """
 
-
-def testInit():
-    pass
+from .headerWriter import *

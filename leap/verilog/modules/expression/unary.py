@@ -22,6 +22,7 @@ class UOPType(Enum):
     POS = "+"
     INV = "~"
     XOR = "^"
+    MACRO = "`"
 
     @staticmethod
     def fromString(op: str):
@@ -35,5 +36,7 @@ class UOPType(Enum):
             return UOPType.INV
         elif op == "unary_xor":
             return UOPType.XOR
+        elif op == "macro":
+            return UOPType.MACRO
         else:
             raise ValueError(f"Unknown unary operator {op}")

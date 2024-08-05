@@ -12,12 +12,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from .expression import *
+
 
 class Parameter:
-    def __init__(self, range, name: str, value: str):
+    def __init__(self, range: Range, name: str, value: str):
         logger.info(f"Parameter: {name} = {value}")
         self.name = name
+        self.range = range
         self.value = value
 
     def __repr__(self):
         return "#{}".format(self.name, self.value)
+
+    def getName(self):
+        return self.name

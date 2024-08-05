@@ -62,6 +62,24 @@ def readVerilog(filename: str) -> Netlist:
     return parse_verilog(data)
 
 
+def parseVerilog(filename: str, systemVerilog: bool = True):
+    import os
+
+    grammer = None
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    grammar_file = (
+        os.path.join(curr_dir, "systemverilog.lark")
+        if systemVerilog
+        else os.path.join(curr_dir, "verilog.lark")
+    )
+    with open(grammar_file, "r") as f:
+        grammer = f.read()
+    parser = Lark(grammer, parser="lalr", lexer="contextual")
+    parseTree = parser.parse(open(filename).read())
+
+    return parseTree
+
+
 def printVerilogAST(filename: str, textFile: str = None, systemVerilog: bool = True):
     import os
     from lark.tree import pydot__tree_to_png
@@ -78,12 +96,14 @@ def printVerilogAST(filename: str, textFile: str = None, systemVerilog: bool = T
     parser = Lark(grammer, parser="lalr", lexer="contextual")
     parseTree = parser.parse(open(filename).read())
 
-    # transform = SystemVerilogTransformer() if systemVerilog else VerilogTransformer()
-    # parseTree = transform.transform(parseTree)
+    transform = SystemVerilogTransformer() if systemVerilog else VerilogTransformer()
+    parseTree = transform.transform(parseTree)
+
+    astText = parseTree.pretty() if isinstance(parseTree, str) else str(parseTree)
 
     if textFile is not None:
         with open(textFile, "w") as f:
-            f.write(str(parseTree.pretty()))
+            f.write(astText)
     else:
-        print(parseTree.pretty())
+        print(astText)
     # pydot__tree_to_png(parseTree, pngFile)
